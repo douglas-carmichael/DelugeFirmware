@@ -21,7 +21,7 @@
 
 class RenameUI : public QwertyUI {
 public:
-	RenameUI(const char* title_);
+	RenameUI(deluge::l10n::String title_);
 	bool opened();
 	void displayText(bool blinkImmediately = false) override;
 	void renderOLED(deluge::hid::display::oled_canvas::Canvas& canvas) override;

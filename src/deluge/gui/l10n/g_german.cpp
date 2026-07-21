@@ -763,6 +763,9 @@ PLACE_SDRAM_DATA Language german{
         {STRING_FOR_TITLE_SAVE_KIT_PATTERN, "Kit-Pat sichern"},
         {STRING_FOR_TITLE_SAVE_DRUM_PATTERN, "Drum-Pat sichern"},
         {STRING_FOR_TITLE_CLIP_SETTINGS, "Clip-Einstell."},
+        {STRING_FOR_TITLE_CC_NAME, "CC-Name"},
+        {STRING_FOR_TITLE_TRACK_NAME, "Spurname"},
+        {STRING_FOR_TITLE_DRUM_NAME, "Drum-Name"},
     },
     &built_in::english,
 };

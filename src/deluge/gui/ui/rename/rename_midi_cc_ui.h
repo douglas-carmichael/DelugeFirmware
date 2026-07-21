@@ -25,7 +25,7 @@ class Clip;
 
 class RenameMidiCCUI final : public RenameUI {
 public:
-	RenameMidiCCUI(const char* title_) : RenameUI(title_) {}
+	RenameMidiCCUI(deluge::l10n::String title_) : RenameUI(title_) {}
 
 protected:
 	bool trySetName(std::string_view) override;

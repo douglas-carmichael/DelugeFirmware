@@ -1043,6 +1043,9 @@ PLACE_SDRAM_DATA Language english{
         {STRING_FOR_TITLE_SAVE_KIT_PATTERN, "Save Kit Pattern"},
         {STRING_FOR_TITLE_SAVE_DRUM_PATTERN, "Save Drum Pattern"},
         {STRING_FOR_TITLE_CLIP_SETTINGS, "Clip Settings"},
+        {STRING_FOR_TITLE_CC_NAME, "CC Name"},
+        {STRING_FOR_TITLE_TRACK_NAME, "Track name"},
+        {STRING_FOR_TITLE_DRUM_NAME, "Drum Name"},
     },
 };
 } // namespace deluge::l10n::built_in

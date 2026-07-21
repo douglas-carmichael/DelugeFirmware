@@ -25,7 +25,7 @@
 #include "model/output.h"
 #include "model/song/song.h"
 
-PLACE_SDRAM_BSS RenameOutputUI renameOutputUI{"Track name"};
+PLACE_SDRAM_BSS RenameOutputUI renameOutputUI{deluge::l10n::String::STRING_FOR_TITLE_TRACK_NAME};
 
 std::string_view RenameOutputUI::getCurrentName() const {
 	return output->name.get();

@@ -84,7 +84,7 @@ Error LoadMidiDeviceDefinitionUI::setupForLoadingMidiDeviceDefinition() {
 	fileIconPt2Width = 0;
 
 	if (display->haveOLED()) {
-		title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_MIDI_DEVICE);
+		title = deluge::l10n::String::STRING_FOR_TITLE_LOAD_MIDI_DEVICE;
 		fileIcon = deluge::hid::display::OLED::midiIcon;
 		fileIconPt2 = deluge::hid::display::OLED::midiIconPt2;
 		fileIconPt2Width = 1;

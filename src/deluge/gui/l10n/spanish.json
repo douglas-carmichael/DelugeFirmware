@@ -839,6 +839,9 @@
     "STRING_FOR_TITLE_CLIP_SETTINGS": "Ajustes de clip",
     "STRING_FOR_TITLE_SAVE_KIT_PATTERN": "Patron kit",
     "STRING_FOR_TITLE_SAVE_DRUM_PATTERN": "Patron drum",
-    "STRING_FOR_VOLUME_LEVEL": "Volumen"
+    "STRING_FOR_VOLUME_LEVEL": "Volumen",
+    "STRING_FOR_TITLE_CC_NAME": "Nombre de CC",
+    "STRING_FOR_TITLE_TRACK_NAME": "Nombre de pista",
+    "STRING_FOR_TITLE_DRUM_NAME": "Nombre de drum"
   }
 }

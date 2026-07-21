@@ -27,7 +27,7 @@ using namespace deluge::gui;
 
 DxSyxBrowser::DxSyxBrowser() {
 	fileIcon = deluge::hid::display::OLED::waveIcon;
-	title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_DX7_SYX_FILES);
+	title = deluge::l10n::String::STRING_FOR_TITLE_DX7_SYX_FILES;
 	shouldWrapFolderContents = false;
 }
 

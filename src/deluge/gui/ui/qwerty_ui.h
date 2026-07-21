@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "gui/l10n/strings.h"
 #include "gui/ui/ui.h"
 #include "model/favourite/favourite_manager.h"
 #include "util/d_string.h"
@@ -47,7 +48,7 @@ protected:
 	// This may be called in card routine so long as either !currentFileExists (which is always the case in a
 	// processBackspace()), or we are not LoadSongUI
 
-	char const* title;
+	deluge::l10n::String title = deluge::l10n::String::EMPTY_STRING;
 	void drawTextForOLEDEditing(int32_t textStartX, int32_t xPixelMax, int32_t yPixel, int32_t maxChars,
 	                            deluge::hid::display::oled_canvas::Canvas& canvas);
 

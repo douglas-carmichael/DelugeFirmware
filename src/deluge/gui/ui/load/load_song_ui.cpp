@@ -63,7 +63,7 @@ namespace encoders = deluge::hid::encoders;
 LoadSongUI::LoadSongUI() {
 	qwertyAlwaysVisible = false;
 	filePrefix = "SONG";
-	title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_SONG);
+	title = deluge::l10n::String::STRING_FOR_TITLE_LOAD_SONG;
 	performingLoad = false;
 	qwertyCurrentlyDrawnOnscreen = false;
 }

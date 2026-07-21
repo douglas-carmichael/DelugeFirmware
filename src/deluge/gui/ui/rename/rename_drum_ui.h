@@ -24,7 +24,7 @@ class SoundDrum;
 
 class RenameDrumUI final : public RenameUI {
 public:
-	RenameDrumUI(const char* title_) : RenameUI(title_) {};
+	RenameDrumUI(deluge::l10n::String title_) : RenameUI(title_) {};
 
 protected:
 	bool trySetName(std::string_view name) override;

@@ -25,7 +25,7 @@
 #include "model/output.h"
 #include "model/song/song.h"
 
-PLACE_SDRAM_BSS RenameClipUI renameClipUI{"Clip Name"};
+PLACE_SDRAM_BSS RenameClipUI renameClipUI{deluge::l10n::String::STRING_FOR_CLIP_NAME};
 
 std::string_view RenameClipUI::getCurrentName() const {
 	return clip->name.get();

@@ -47,7 +47,7 @@ PLACE_SDRAM_BSS SaveSongUI saveSongUI{};
 
 SaveSongUI::SaveSongUI() {
 	filePrefix = "SONG";
-	title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_SONG);
+	title = deluge::l10n::String::STRING_FOR_TITLE_SAVE_SONG;
 }
 
 bool SaveSongUI::opened() {

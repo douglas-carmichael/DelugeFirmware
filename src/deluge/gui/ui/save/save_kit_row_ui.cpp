@@ -72,7 +72,7 @@ tryDefaultDir:
 
 	if (display->haveOLED()) {
 		fileIcon = deluge::hid::display::OLED::synthIcon;
-		title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_SYNTH_PRESET);
+		title = deluge::l10n::String::STRING_FOR_TITLE_SAVE_SYNTH_PRESET;
 	}
 
 	filePrefix = "SYNT";

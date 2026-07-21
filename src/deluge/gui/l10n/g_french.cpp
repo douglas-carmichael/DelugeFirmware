@@ -813,6 +813,9 @@ PLACE_SDRAM_DATA Language french{
         {STRING_FOR_TITLE_SAVE_KIT_PATTERN, "Pattern kit"},
         {STRING_FOR_TITLE_SAVE_DRUM_PATTERN, "Pattern drum"},
         {STRING_FOR_TITLE_CLIP_SETTINGS, "Reglages clip"},
+        {STRING_FOR_TITLE_CC_NAME, "Nom du CC"},
+        {STRING_FOR_TITLE_TRACK_NAME, "Nom de piste"},
+        {STRING_FOR_TITLE_DRUM_NAME, "Nom du drum"},
     },
     &built_in::english,
 };

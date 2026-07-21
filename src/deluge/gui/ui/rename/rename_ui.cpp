@@ -20,7 +20,7 @@
 #include "gui/ui/qwerty_ui.h"
 #include "hid/display/oled.h"
 
-RenameUI::RenameUI(const char* title_) : QwertyUI() {
+RenameUI::RenameUI(deluge::l10n::String title_) : QwertyUI() {
 	title = title_;
 	scrollPosHorizontal = 0;
 	oledShowsUIUnderneath = true;
@@ -78,7 +78,7 @@ void RenameUI::renderOLED(deluge::hid::display::oled_canvas::Canvas& canvas) {
 
 	canvas.clearAreaExact(windowMinX + 1, windowMinY + 1, windowMaxX - 1, windowMaxY - 1);
 	canvas.drawRectangle(windowMinX, windowMinY, windowMaxX, windowMaxY);
-	canvas.drawStringCentred(title, windowMinY + 6, kTextSpacingX, kTextSpacingY);
+	canvas.drawStringCentred(deluge::l10n::get(title), windowMinY + 6, kTextSpacingX, kTextSpacingY);
 
 	int32_t maxNumChars = 17; // "RENAME INSTRUMENT" should be the longest title string, so match that, so match that
 	int32_t charsWidthPixels = maxNumChars * kTextSpacingX;

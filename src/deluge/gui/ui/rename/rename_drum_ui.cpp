@@ -27,7 +27,7 @@
 #include "model/song/song.h"
 #include "processing/sound/sound_drum.h"
 
-PLACE_SDRAM_BSS RenameDrumUI renameDrumUI{"Drum Name"};
+PLACE_SDRAM_BSS RenameDrumUI renameDrumUI{deluge::l10n::String::STRING_FOR_TITLE_DRUM_NAME};
 
 std::string_view RenameDrumUI::getCurrentName() const {
 	Kit* kit = getCurrentKit();

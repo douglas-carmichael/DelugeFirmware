@@ -1305,7 +1305,7 @@ void Browser::currentFileDeleted() {
 }
 
 void Browser::renderOLED(deluge::hid::display::oled_canvas::Canvas& canvas) {
-	canvas.drawScreenTitle(title);
+	canvas.drawScreenTitle(deluge::l10n::getView(title));
 
 	int32_t textStartX = 14;
 	int32_t iconStartX = 1;
