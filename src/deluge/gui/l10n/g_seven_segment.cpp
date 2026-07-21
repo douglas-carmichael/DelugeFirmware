@@ -572,6 +572,7 @@ PLACE_SDRAM_DATA Language seven_segment{
         {STRING_FOR_DEFAULT_USE_LAST_CLIP_TYPE, "LAST"},
         {STRING_FOR_FAVOURITES_EMPTY, "NONE"},
         {STRING_FOR_DEFAULT_HORIZONTAL_MENU, "HORZ"},
+        {STRING_FOR_LANGUAGE, "LANG"},
     },
     &built_in::english,
 };

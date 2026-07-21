@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "gui/l10n/language.h"
+#include "gui/l10n/l10n.h"
 #ifdef __cplusplus
 #include "definitions_cxx.hpp"
 #include "display.h"
@@ -43,9 +43,9 @@ struct Icon {
 class OLED : public Display {
 public:
 	OLED() : Display(DisplayType::OLED) {
-		if (l10n::chosenLanguage == nullptr || l10n::chosenLanguage == &l10n::built_in::seven_segment) {
-			l10n::chosenLanguage = &l10n::built_in::english;
-		}
+		// The user's chosen language (or english until the flash settings have been read, in
+		// which case FlashStorage::readSettings() re-applies the choice afterwards).
+		l10n::chosenLanguage = l10n::getPreferredOledLanguage();
 	}
 
 	/// Clear the canvas currently being used as the main image.

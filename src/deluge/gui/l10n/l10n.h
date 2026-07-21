@@ -11,4 +11,12 @@ std::string_view getView(const deluge::l10n::Language& language, deluge::l10n::S
 std::string_view getView(deluge::l10n::String string);
 const char* get(const deluge::l10n::Language& language, deluge::l10n::String string);
 const char* get(deluge::l10n::String string);
+
+/// The language chosen in the settings menu (kSelectableLanguages[FlashStorage::preferredLanguage]),
+/// or english before the flash settings have been read.
+Language const* getPreferredOledLanguage();
+
+/// Point chosenLanguage at the preferred language. Only applies on an OLED display — the 7SEG
+/// display always keeps its own abbreviated built-in language.
+void applyPreferredOledLanguage();
 } // namespace deluge::l10n

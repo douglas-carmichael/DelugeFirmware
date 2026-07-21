@@ -93,6 +93,8 @@ extern bool defaultUseSharps;
 /// Whether the Deluge offers USB audio to a computer, alongside USB MIDI. Read when USB starts up as a peripheral, at
 /// power-on - changing it takes effect after a restart
 extern bool usbAudioEnabled;
+// Index into deluge::l10n::kSelectableLanguages, for the OLED display's UI language.
+extern uint8_t preferredLanguage;
 
 void readSettings();
 void writeSettings();

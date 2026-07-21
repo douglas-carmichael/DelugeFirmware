@@ -1153,6 +1153,9 @@ enum class String : size_t {
 	STRING_FOR_CHORD_KEYBOARD_MODE_ROW,
 	STRING_FOR_CHORD_KEYBOARD_MODE_COLUMN,
 
+	// string for the UI language selection menu
+	STRING_FOR_LANGUAGE,
+
 	STRING_LAST
 };
 

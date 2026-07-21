@@ -1,9 +1,29 @@
 #include "gui/l10n/l10n.h"
 #include "gui/l10n/strings.h"
+#include "hid/display/display.h"
+#include "storage/flash_storage.h"
 #include "util/misc.h"
 
 namespace deluge::l10n {
 Language const* chosenLanguage = nullptr;
+
+Language const* getPreferredOledLanguage() {
+	if (!FlashStorage::settingsBeenRead) {
+		return &built_in::english;
+	}
+	uint8_t index = FlashStorage::preferredLanguage;
+	if (index >= kSelectableLanguages.size()) {
+		index = 0;
+	}
+	return kSelectableLanguages[index];
+}
+
+void applyPreferredOledLanguage() {
+	if (display == nullptr || !display->haveOLED()) {
+		return;
+	}
+	chosenLanguage = getPreferredOledLanguage();
+}
 
 std::string_view getView(const deluge::l10n::Language& language, deluge::l10n::String string) {
 	auto string_opt = language.get(string);

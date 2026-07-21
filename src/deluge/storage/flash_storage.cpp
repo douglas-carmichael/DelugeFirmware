@@ -292,6 +292,7 @@ Polarity defaultPatchCablePolarity = Polarity::BIPOLAR;
 bool defaultUseSharps = true;
 
 bool usbAudioEnabled = true;
+uint8_t preferredLanguage = 0;
 
 void resetSettings() {
 
@@ -404,6 +405,8 @@ void resetSettings() {
 	usbAudioEnabled = true;
 	usb_audio::directMonitoring = true;
 	usb_audio::outputSource = usb_audio::OutputSource::MAIN_MIX;
+	preferredLanguage = 0;
+	deluge::l10n::applyPreferredOledLanguage();
 }
 
 void factoryReset(bool showPopup) {
@@ -887,6 +890,16 @@ void readSettings() {
 	usb_audio::outputSource = (buffer[200] < usb_audio::kNumOutputSources)
 	                              ? static_cast<usb_audio::OutputSource>(buffer[200])
 	                              : usb_audio::OutputSource::MAIN_MIX;
+
+	// Byte 201 holds the preferred OLED UI language, the first byte after the USB audio settings above.
+	// Older firmware (and any unit that has never saved it) leaves 0 here, which maps to English.
+	if (buffer[201] >= deluge::l10n::kSelectableLanguages.size()) {
+		preferredLanguage = 0; // English, also what settings saved by older firmware map to
+	}
+	else {
+		preferredLanguage = buffer[201];
+	}
+	deluge::l10n::applyPreferredOledLanguage();
 }
 
 /// Sanity-check the pre-c1.3 MIDI-follow block (bytes 126-145) before migrating it. Same checks the deleted
@@ -1158,6 +1171,7 @@ void writeSettings() {
 	buffer[198] = usbAudioEnabled ? 0 : 1;
 	buffer[199] = usb_audio::directMonitoring ? 0 : 1;
 	buffer[200] = util::to_underlying(usb_audio::outputSource);
+	buffer[201] = preferredLanguage;
 
 	R_SFLASH_EraseSector(0x80000 - 0x1000, SPIBSC_CH, SPIBSC_CMNCR_BSZ_SINGLE, 1, SPIBSC_OUTPUT_ADDR_24);
 	R_SFLASH_ByteProgram(0x80000 - 0x1000, buffer.data(), 256, SPIBSC_CH, SPIBSC_CMNCR_BSZ_SINGLE, SPIBSC_1BIT,

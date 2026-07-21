@@ -87,6 +87,7 @@
 #include "gui/menu_item/integer_range.h"
 #include "gui/menu_item/key_range.h"
 #include "gui/menu_item/keyboard/layout.h"
+#include "gui/menu_item/language.h"
 #include "gui/menu_item/lfo/sync.h"
 #include "gui/menu_item/lfo/type.h"
 #include "gui/menu_item/master_transpose.h"
@@ -1059,6 +1060,8 @@ PLACE_SDRAM_BSS Submenu usbAudioMenu{
 
 PLACE_SDRAM_BSS firmware::Version firmwareVersionMenu{STRING_FOR_FIRMWARE_VERSION, STRING_FOR_FIRMWARE_VER_MENU_TITLE};
 
+PLACE_SDRAM_BSS menu_item::Language languageMenu{STRING_FOR_LANGUAGE, STRING_FOR_LANGUAGE};
+
 PLACE_SDRAM_BSS battery::Level batteryLevelMenu{STRING_FOR_BATTERY_LEVEL, STRING_FOR_BATTERY_LEVEL_MENU_TITLE};
 PLACE_SDRAM_BSS cpu::VoiceUsage voiceUsageMenu{STRING_FOR_VOICE_USAGE, STRING_FOR_VOICE_USAGE};
 
@@ -1920,6 +1923,7 @@ PLACE_SDRAM_BSS Submenu settingsRootMenu{
         &flashStatusMenu,
         &recordSubmenu,
         &runtimeFeatureSettingsMenu,
+        &languageMenu,
         &batteryLevelMenu,
         &voiceUsageMenu,
         &firmwareVersionMenu,
