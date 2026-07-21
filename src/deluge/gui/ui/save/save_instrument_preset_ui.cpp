@@ -74,15 +74,15 @@ tryDefaultDir:
 	if (display->haveOLED()) {
 		switch (outputTypeToLoad) {
 		case OutputType::SYNTH:
-			title = "Save synth";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_SYNTH);
 			fileIcon = deluge::hid::display::OLED::synthIcon;
 			break;
 		case OutputType::KIT:
-			title = "Save kit";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_KIT);
 			fileIcon = deluge::hid::display::OLED::kitIcon;
 			break;
 		case OutputType::MIDI_OUT:
-			title = "Save midi preset";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_MIDI_PRESET);
 			fileIcon = deluge::hid::display::OLED::midiIcon;
 			fileIconPt2 = deluge::hid::display::OLED::midiIconPt2;
 			fileIconPt2Width = 1;

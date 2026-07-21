@@ -34,10 +34,9 @@ char const* Kit::getTitle() {
 
 std::span<char const*> Kit::getOptions() {
 	using enum l10n::String;
-	static char const* options[] = {
-	    l10n::get(STRING_FOR_LOAD_ALL), //<
-	    l10n::get(STRING_FOR_SLICE)     //<
-	};
+	static const char* options[2];
+	options[0] = l10n::get(STRING_FOR_LOAD_ALL);
+	options[1] = l10n::get(STRING_FOR_SLICE);
 	return {options, 2};
 }
 

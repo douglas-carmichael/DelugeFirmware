@@ -42,11 +42,13 @@ char const* ClearSong::getTitle() {
 std::span<char const*> ClearSong::getOptions() {
 	using enum l10n::String;
 	if (display->haveOLED()) {
-		static char const* options[] = {l10n::get(STRING_FOR_OK)};
+		static const char* options[1];
+		options[0] = l10n::get(STRING_FOR_OK);
 		return {options, 1};
 	}
 	else {
-		static char const* options[] = {l10n::get(STRING_FOR_NEW)};
+		static const char* options[1];
+		options[0] = l10n::get(STRING_FOR_NEW);
 		return {options, 1};
 	}
 }

@@ -10,7 +10,7 @@
 namespace deluge::l10n {
 
 class Language;
-constexpr size_t kMaxNumLanguages = 4;
+constexpr size_t kMaxNumLanguages = 6;
 extern Language const* chosenLanguage;
 
 class Language {
@@ -60,15 +60,17 @@ extern deluge::l10n::Language english;
 extern deluge::l10n::Language seven_segment;
 extern deluge::l10n::Language french;
 extern deluge::l10n::Language spanish;
+extern deluge::l10n::Language german;
 } // namespace deluge::l10n::built_in
 
 namespace deluge::l10n {
 // Languages the user can pick for the OLED display, in menu order. Index 0 is the default and
 // what out-of-range stored values fall back to. seven_segment is tied to the 7SEG display
 // hardware, so it is not selectable.
-inline constexpr std::array<Language const*, 3> kSelectableLanguages = {
+inline constexpr std::array<Language const*, 4> kSelectableLanguages = {
     &built_in::english,
     &built_in::french,
     &built_in::spanish,
+    &built_in::german,
 };
 } // namespace deluge::l10n

@@ -19,6 +19,7 @@
 #include "definitions_cxx.hpp"
 #include "extern.h"
 #include "gui/context_menu/load_instrument_preset.h"
+#include "gui/l10n/l10n.h"
 #include "gui/ui/keyboard/keyboard_screen.h"
 #include "gui/ui/root_ui.h"
 #include "gui/views/arranger_view.h"
@@ -161,21 +162,21 @@ Error LoadInstrumentPresetUI::setupForOutputType() {
 
 	if (display->haveOLED()) {
 		if (loadingSynthToKitRow) {
-			title = "Synth to row";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SYNTH_TO_ROW);
 			fileIcon = deluge::hid::display::OLED::synthIcon;
 		}
 		else {
 			switch (outputTypeToLoad) {
 			case OutputType::SYNTH:
-				title = "Load synth";
+				title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_SYNTH);
 				fileIcon = deluge::hid::display::OLED::synthIcon;
 				break;
 			case OutputType::KIT:
-				title = "Load kit";
+				title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_KIT);
 				fileIcon = deluge::hid::display::OLED::kitIcon;
 				break;
 			case OutputType::MIDI_OUT:
-				title = "Load midi preset";
+				title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_MIDI_PRESET);
 				fileIcon = deluge::hid::display::OLED::midiIcon;
 				fileIconPt2 = deluge::hid::display::OLED::midiIconPt2;
 				fileIconPt2Width = 1;

@@ -86,7 +86,7 @@ char const* allowedFileExtensionsAudio[] = {"WAV", "AIFF", "AIF", NULL};
 
 SampleBrowser::SampleBrowser() {
 	fileIcon = deluge::hid::display::OLED::waveIcon;
-	title = "Audio files";
+	title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_AUDIO_FILES);
 	shouldWrapFolderContents = false;
 	qwertyAlwaysVisible = false;
 	shouldInterpretNoteNamesForThisBrowser = true;

@@ -38,11 +38,13 @@ std::span<char const*> CancelStemExport::getOptions() {
 	using enum l10n::String;
 
 	if (display->haveOLED()) {
-		static char const* options[] = {l10n::get(STRING_FOR_OK)};
+		static const char* options[1];
+		options[0] = l10n::get(STRING_FOR_OK);
 		return {options, 1};
 	}
 	else {
-		static char const* options[] = {l10n::get(STRING_FOR_SURE)};
+		static const char* options[1];
+		options[0] = l10n::get(STRING_FOR_SURE);
 		return {options, 1};
 	}
 }

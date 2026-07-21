@@ -36,8 +36,7 @@ bool NewClipType::getGreyoutColsAndRows(uint32_t* cols, uint32_t* rows) {
 }
 
 char const* NewClipType::getTitle() {
-	static char const* title = "New Clip Type";
-	return title;
+	return l10n::get(l10n::String::STRING_FOR_DEFAULT_NEW_CLIP_TYPE);
 }
 
 std::span<char const*> NewClipType::getOptions() {

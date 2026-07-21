@@ -18,6 +18,7 @@
 
 #include "dx_browser.h"
 #include "definitions_cxx.hpp"
+#include "gui/l10n/l10n.h"
 #include "gui/menu_item/dx/cartridge.h"
 #include "gui/ui/sound_editor.h"
 #include "hid/display/oled.h"
@@ -26,7 +27,7 @@ using namespace deluge::gui;
 
 DxSyxBrowser::DxSyxBrowser() {
 	fileIcon = deluge::hid::display::OLED::waveIcon;
-	title = "DX7 syx files";
+	title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_DX7_SYX_FILES);
 	shouldWrapFolderContents = false;
 }
 

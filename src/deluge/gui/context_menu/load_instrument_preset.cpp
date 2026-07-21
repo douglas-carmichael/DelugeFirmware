@@ -31,7 +31,8 @@ char const* LoadInstrumentPreset::getTitle() {
 
 std::span<char const*> LoadInstrumentPreset::getOptions() {
 	using enum l10n::String;
-	static char const* options[] = {l10n::get(STRING_FOR_CLONE)};
+	static const char* options[1];
+	options[0] = l10n::get(STRING_FOR_CLONE);
 	return {options, 1};
 }
 

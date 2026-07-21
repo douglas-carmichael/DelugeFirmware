@@ -36,12 +36,11 @@ char const* Synth::getTitle() {
 
 std::span<char const*> Synth::getOptions() {
 	using enum l10n::String;
-	static char const* options[] = {
-	    l10n::get(STRING_FOR_MULTISAMPLES), //<
-	    l10n::get(STRING_FOR_BASIC),        //<
-	    l10n::get(STRING_FOR_SINGLE_CYCLE), //<
-	    l10n::get(STRING_FOR_WAVETABLE),    //<
-	};
+	static const char* options[4];
+	options[0] = l10n::get(STRING_FOR_MULTISAMPLES);
+	options[1] = l10n::get(STRING_FOR_BASIC);
+	options[2] = l10n::get(STRING_FOR_SINGLE_CYCLE);
+	options[3] = l10n::get(STRING_FOR_WAVETABLE);
 	return {options, 4};
 }
 

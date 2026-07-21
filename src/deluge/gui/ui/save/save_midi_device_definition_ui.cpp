@@ -109,7 +109,7 @@ doReturnFalse:
 		enteredTextEditPos = enteredText.getLength();
 	}
 
-	title = "Save midi device";
+	title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_MIDI_DEVICE);
 	fileIcon = deluge::hid::display::OLED::midiIcon;
 	fileIconPt2 = deluge::hid::display::OLED::midiIconPt2;
 	fileIconPt2Width = 1;

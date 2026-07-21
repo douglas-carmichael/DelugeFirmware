@@ -31,25 +31,22 @@ namespace deluge::gui::context_menu::clip_settings {
 PLACE_SDRAM_BSS ClipSettingsMenu clipSettings{};
 
 char const* ClipSettingsMenu::getTitle() {
-	static char const* title = "Clip Settings";
-	return title;
+	return l10n::get(l10n::String::STRING_FOR_TITLE_CLIP_SETTINGS);
 }
 
 std::span<char const*> ClipSettingsMenu::getOptions() {
 	using enum l10n::String;
 	if (clip->type == ClipType::AUDIO) {
-		static const char* optionsls[] = {
-		    l10n::get(STRING_FOR_CLIP_MODE),
-		    l10n::get(STRING_FOR_CLIP_NAME),
-		};
+		static const char* optionsls[2];
+		optionsls[0] = l10n::get(STRING_FOR_CLIP_MODE);
+		optionsls[1] = l10n::get(STRING_FOR_CLIP_NAME);
 		return {optionsls, 2};
 	}
 	else {
-		static const char* optionsls[] = {
-		    l10n::get(STRING_FOR_CONVERT_TO_AUDIO),
-		    l10n::get(STRING_FOR_CLIP_MODE),
-		    l10n::get(STRING_FOR_CLIP_NAME),
-		};
+		static const char* optionsls[3];
+		optionsls[0] = l10n::get(STRING_FOR_CONVERT_TO_AUDIO);
+		optionsls[1] = l10n::get(STRING_FOR_CLIP_MODE);
+		optionsls[2] = l10n::get(STRING_FOR_CLIP_NAME);
 		return {optionsls, 3};
 	}
 }

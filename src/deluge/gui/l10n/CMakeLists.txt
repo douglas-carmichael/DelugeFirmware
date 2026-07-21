@@ -1,7 +1,7 @@
 #
 # Build strings
 #
-set(LANGUAGES english seven_segment french spanish)
+set(LANGUAGES english seven_segment french spanish german)
 
 foreach (LANGUAGE ${LANGUAGES})
   add_custom_command(

@@ -15,17 +15,15 @@ constexpr size_t kNumValues = 3;
 PLACE_SDRAM_BSS LaunchStyleMenu launchStyle{};
 
 char const* LaunchStyleMenu::getTitle() {
-	static char const* title = "Clip Mode";
-	return title;
+	return l10n::get(l10n::String::STRING_FOR_CLIP_MODE);
 }
 
 std::span<char const*> LaunchStyleMenu::getOptions() {
 	using enum l10n::String;
-	static const char* optionsls[] = {
-	    l10n::get(STRING_FOR_DEFAULT_LAUNCH),
-	    l10n::get(STRING_FOR_FILL_LAUNCH),
-	    l10n::get(STRING_FOR_ONCE_LAUNCH),
-	};
+	static const char* optionsls[3];
+	optionsls[0] = l10n::get(STRING_FOR_DEFAULT_LAUNCH);
+	optionsls[1] = l10n::get(STRING_FOR_FILL_LAUNCH);
+	optionsls[2] = l10n::get(STRING_FOR_ONCE_LAUNCH);
 	return {optionsls, kNumValues};
 }
 

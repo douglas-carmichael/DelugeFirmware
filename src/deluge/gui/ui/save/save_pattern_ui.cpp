@@ -87,18 +87,18 @@ doReturnFalse:
 	if (getCurrentOutputType() == OutputType::KIT) {
 		if (getRootUI()->getAffectEntire()) {
 			defaultDir = PATTERN_RHYTHMIC_KIT_DEFAULT_FOLDER;
-			title = "Save Kit Pattern";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_KIT_PATTERN);
 			selectedDrumOnly = false;
 		}
 		else {
 			defaultDir = PATTERN_RHYTHMIC_DRUM_DEFAULT_FOLDER;
-			title = "Save Drum Pattern";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_DRUM_PATTERN);
 			selectedDrumOnly = true;
 		}
 	}
 	else {
 		defaultDir = std::string(PATTERN_MELODIC_DEFAULT_FOLDER);
-		title = "Save Pattern";
+		title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_SAVE_PATTERN);
 		selectedDrumOnly = false;
 	}
 

@@ -33,11 +33,10 @@ char const* SaveSongOrInstrument::getTitle() {
 
 std::span<char const*> SaveSongOrInstrument::getOptions() {
 	using enum l10n::String;
-	static char const* options[] = {
-	    l10n::get(STRING_FOR_COLLECT_MEDIA), //<
-	    l10n::get(STRING_FOR_CREATE_FOLDER), //<
-	    l10n::get(STRING_FOR_DELETE)         //<
-	};
+	static const char* options[3];
+	options[0] = l10n::get(STRING_FOR_COLLECT_MEDIA);
+	options[1] = l10n::get(STRING_FOR_CREATE_FOLDER);
+	options[2] = l10n::get(STRING_FOR_DELETE);
 	return {options, 3};
 }
 

@@ -78,11 +78,16 @@ char const* AudioInputSelector::getTitle() {
 
 std::span<const char*> AudioInputSelector::getOptions() {
 	using enum l10n::String;
-	static const char* options[] = {
-	    l10n::get(STRING_FOR_DISABLED),     l10n::get(STRING_FOR_LEFT_INPUT),     l10n::get(STRING_FOR_RIGHT_INPUT),
-	    l10n::get(STRING_FOR_STEREO_INPUT), l10n::get(STRING_FOR_BALANCED_INPUT), l10n::get(STRING_FOR_USB_INPUT),
-	    l10n::get(STRING_FOR_MIX_PRE_FX),   l10n::get(STRING_FOR_MIX_POST_FX),    l10n::get(STRING_FOR_TRACK),
-	};
+	static const char* options[kNumValues];
+	options[0] = l10n::get(STRING_FOR_DISABLED);
+	options[1] = l10n::get(STRING_FOR_LEFT_INPUT);
+	options[2] = l10n::get(STRING_FOR_RIGHT_INPUT);
+	options[3] = l10n::get(STRING_FOR_STEREO_INPUT);
+	options[4] = l10n::get(STRING_FOR_BALANCED_INPUT);
+	options[5] = l10n::get(STRING_FOR_USB_INPUT);
+	options[6] = l10n::get(STRING_FOR_MIX_PRE_FX);
+	options[7] = l10n::get(STRING_FOR_MIX_POST_FX);
+	options[8] = l10n::get(STRING_FOR_TRACK);
 	return {options, kNumValues};
 }
 

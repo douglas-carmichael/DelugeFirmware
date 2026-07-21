@@ -18,6 +18,7 @@
 #include "gui/ui/load/load_pattern_ui.h"
 #include "definitions_cxx.hpp"
 #include "extern.h"
+#include "gui/l10n/l10n.h"
 #include "gui/ui/root_ui.h"
 #include "gui/views/instrument_clip_view.h"
 #include "hid/buttons.h"
@@ -80,20 +81,20 @@ bool LoadPatternUI::opened() {
 		if (getRootUI()->getAffectEntire()) {
 			defaultDir = PATTERN_RHYTHMIC_KIT_DEFAULT_FOLDER;
 			favouritesManager.setCategory(PATTERN_RHYTHMIC_KIT_DEFAULT_FOLDER);
-			title = "Load Kit Pattern";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_KIT_PATTERN);
 			selectedDrumOnly = false;
 		}
 		else {
 			defaultDir = PATTERN_RHYTHMIC_DRUM_DEFAULT_FOLDER;
 			favouritesManager.setCategory(PATTERN_RHYTHMIC_DRUM_DEFAULT_FOLDER);
-			title = "Load Drum Pattern";
+			title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_DRUM_PATTERN);
 			selectedDrumOnly = true;
 		}
 	}
 	else {
 		defaultDir = std::string(PATTERN_MELODIC_DEFAULT_FOLDER);
 		favouritesManager.setCategory(PATTERN_MELODIC_DEFAULT_FOLDER);
-		title = "Load Pattern";
+		title = deluge::l10n::get(deluge::l10n::String::STRING_FOR_TITLE_LOAD_PATTERN);
 		selectedDrumOnly = false;
 	}
 
