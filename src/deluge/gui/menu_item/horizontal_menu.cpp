@@ -143,31 +143,15 @@ void HorizontalMenu::renderTitle(const Paging& paging) const {
 		constexpr uint8_t paging_width = kTextSpacingX * 2 + 10;
 
 		if (title_width > OLED_MAIN_WIDTH_PIXELS - paging_width) {
-			std::string title_copy(title);
-
-			// Split into words
-			std::vector<std::string> words;
-			int32_t start = 0;
-			while (start < title_copy.size()) {
-				// skip leading spaces
-				while (start < title_copy.size() && title_copy[start] == ' ') {
-					start++;
-				}
-				if (start >= title_copy.size())
-					break;
-
-				int32_t end = start;
-				while (end < title_copy.size() && title_copy[end] != ' ') {
-					end++;
-				}
-
-				words.emplace_back(title_copy.substr(start, end - start));
-				start = end;
-			}
-
-			// Shorten the first word
-			if (words.size() == 2) {
-				title = std::string(1, words[0][0]) + ". " + words[1];
+			// Truncate from the end to fit the space left of the page counter. This is
+			// language-neutral: the previous logic abbreviated a two-word title's first word to its
+			// initial ("Osc mixer" -> "O. mixer"), which deleted the head noun in languages that
+			// lead with it (FR "Mixeur osc", ES "Mezclador osc"), and left three-word titles and
+			// single-word German compounds unshortened - overflowing into the page counter.
+			while (title.size() > 1
+			       && OLED::main.getStringWidthInPixels(title.data(), kTextTitleSizeY)
+			              > OLED_MAIN_WIDTH_PIXELS - paging_width) {
+				title.pop_back();
 			}
 		}
 	}

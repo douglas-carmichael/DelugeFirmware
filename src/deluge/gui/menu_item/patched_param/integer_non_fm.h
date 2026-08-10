@@ -15,10 +15,12 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 #pragma once
+#include "gui/l10n/l10n.h"
 #include "integer.h"
 #include "processing/sound/sound.h"
 
 namespace deluge::gui::menu_item::patched_param {
+// Currently only instantiated as the oscillator-mixer "Noise level" menu.
 class IntegerNonFM : public Integer {
 public:
 	using Integer::Integer;
@@ -28,5 +30,9 @@ public:
 	}
 
 	[[nodiscard]] RenderingStyle getRenderingStyle() const override { return BAR; }
+
+	// Dedicated short label so the mixer column reads "Noise"/"Bruit"/... instead of the truncated
+	// localized title ("Niveau de bruit" would otherwise render as "Nivea").
+	void getColumnLabel(StringBuf& label) override { label.append(l10n::get(l10n::String::STRING_FOR_NOISE_SHORT)); }
 };
 } // namespace deluge::gui::menu_item::patched_param

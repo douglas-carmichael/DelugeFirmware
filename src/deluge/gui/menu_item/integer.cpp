@@ -52,8 +52,8 @@ void IntegerWithOff::drawValue() {
 }
 void IntegerWithOff::drawPixelsForOled() {
 	if (this->getValue() == 0) {
-		deluge::hid::display::OLED::main.drawStringCentred("OFF", 18 + OLED_MAIN_TOPMOST_PIXEL, kTextHugeSpacingX,
-		                                                   kTextHugeSizeY);
+		deluge::hid::display::OLED::main.drawStringCentred(
+		    l10n::get(l10n::String::STRING_FOR_OFF), 18 + OLED_MAIN_TOPMOST_PIXEL, kTextHugeSpacingX, kTextHugeSizeY);
 	}
 
 	else {

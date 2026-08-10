@@ -37,8 +37,11 @@ public:
 	[[nodiscard]] RenderingStyle getRenderingStyle() const override { return BAR; }
 
 	void getColumnLabel(StringBuf& label) override {
-		label.append(getName());
-		label.truncate(4);
+		// Show the source identity ("Osc1"/"Osc2") directly. Truncating the localized title to 4
+		// chars only works when the number leads the string ("Osc1 level"); French/Spanish word
+		// order ("Niveau Osc1"/"Nivel Osc1") would collapse every column to "Nive".
+		label.append(l10n::get(l10n::String::STRING_FOR_OSCILLATOR_SHORT));
+		label.appendInt(source_id_ + 1);
 	}
 };
 } // namespace deluge::gui::menu_item::osc::source

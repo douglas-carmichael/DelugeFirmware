@@ -58,10 +58,12 @@ public:
 	deluge::vector<std::string_view> getOptions(OptType optType) override {
 		(void)optType;
 		using enum l10n::String;
-		static auto out1 = l10n::getView(STRING_FOR_GATE_OUTPUT_1);
-		static auto out2 = l10n::getView(STRING_FOR_GATE_OUTPUT_2);
-		static auto out3 = l10n::getView(STRING_FOR_GATE_OUTPUT_3);
-		static auto out4 = l10n::getView(STRING_FOR_GATE_OUTPUT_4);
+		// Not static: these must re-resolve after a live language switch (the 5th option below
+		// already does). Caching them left four stale labels next to one correct one.
+		auto out1 = l10n::getView(STRING_FOR_GATE_OUTPUT_1);
+		auto out2 = l10n::getView(STRING_FOR_GATE_OUTPUT_2);
+		auto out3 = l10n::getView(STRING_FOR_GATE_OUTPUT_3);
+		auto out4 = l10n::getView(STRING_FOR_GATE_OUTPUT_4);
 
 		return {
 		    out1,                                       //<

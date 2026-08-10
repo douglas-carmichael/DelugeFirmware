@@ -52,8 +52,9 @@ void SampleMarkerEditor::renderInHorizontalMenu(const SlotPosition& slot) {
 }
 
 void SampleMarkerEditor::getColumnLabel(StringBuf& label) {
-	label.append(l10n::get(l10n::String::STRING_FOR_END_POINT));
-	label.truncate(3);
+	// Dedicated short label instead of truncating the localized title (French "Point de fin"
+	// would otherwise render as "Poi").
+	label.append(l10n::get(l10n::String::STRING_FOR_END_POINT_SHORT));
 }
 
 } // namespace deluge::gui::menu_item::audio_clip

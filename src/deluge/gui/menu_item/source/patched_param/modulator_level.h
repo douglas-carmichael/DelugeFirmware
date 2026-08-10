@@ -35,7 +35,13 @@ public:
 
 	[[nodiscard]] RenderingStyle getRenderingStyle() const override { return BAR; }
 
-	void getColumnLabel(StringBuf& label) override { label.append(getName().substr(2).data()); }
+	void getColumnLabel(StringBuf& label) override {
+		// Show the modulator identity ("Mod1"/"Mod2"). substr(2) assumed an English "FM " prefix on
+		// the title, which no longer holds once the title is localized (e.g. French "FM Mod1 niveau"
+		// still starts with "FM", but relying on a fixed offset into a translated string is fragile).
+		label.append(l10n::get(l10n::String::STRING_FOR_MODULATOR_SHORT));
+		label.appendInt(source_id_ + 1);
+	}
 };
 
 } // namespace deluge::gui::menu_item::source::patched_param

@@ -127,7 +127,8 @@ gotError:
 }
 
 void AudioRecorder::renderOLED(deluge::hid::display::oled_canvas::Canvas& canvas) {
-	const char* current_status_text = updatedRecordingStatus ? "Recording" : "Waiting";
+	const char* current_status_text =
+	    updatedRecordingStatus ? l10n::get(l10n::String::STRING_FOR_RECORDING) : "Waiting";
 	canvas.drawStringCentred(current_status_text, 19, kTextBigSpacingX, kTextBigSizeY);
 }
 
