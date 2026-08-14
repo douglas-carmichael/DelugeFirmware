@@ -43,6 +43,7 @@
 #include "hid/display/seven_segment.h"
 #include "hid/encoder_input.h"
 #include "hid/encoders.h"
+#include "hid/hid_sysex_exerciser.h"
 #include "hid/led/indicator_leds.h"
 #include "hid/led/pad_leds.h"
 #include "hid/matrix/matrix_driver.h"
@@ -279,6 +280,12 @@ bool readButtonsAndPads() {
 
 			int32_t thisPadPressIsOn = nextPadPressIsOn;
 			nextPadPressIsOn = USE_DEFAULT_VELOCITY;
+
+			// A press aborts any active display-exerciser run. Skipped during the SD routine: the
+			// abort repaints the UI, and a deferred press is re-processed outside the routine anyway.
+			if (thisPadPressIsOn && !sdRoutineLock) {
+				HIDSysexExerciser::notifyLocalInput();
+			}
 
 			ActionResult result;
 			if (Pad::isPad(util::to_underlying(value))) {

@@ -28,6 +28,7 @@
 #include "hid/display/oled.h"
 #include "hid/display/screensaver.h"
 #include "hid/hid_sysex.h"
+#include "hid/hid_sysex_exerciser.h"
 #include "hid/led/indicator_leds.h"
 #include "hid/led/pad_leds.h"
 #include "io/midi/midi_engine.h"
@@ -251,6 +252,10 @@ void UITimerManager::routine() {
 
 				case TimerName::SYSEX_DISPLAY:
 					HIDSysex::sendDisplayIfChanged();
+					break;
+
+				case TimerName::DISPLAY_EXERCISER:
+					HIDSysexExerciser::timerRoutine();
 					break;
 
 				// explicit fallthrough cases

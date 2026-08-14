@@ -24,6 +24,7 @@
 #include "hid/buttons.h"
 #include "hid/display/screensaver.h"
 #include "hid/encoders.h"
+#include "hid/hid_sysex_exerciser.h"
 #include "hid/led/pad_leds.h"
 #include "hid/matrix/matrix_driver.h"
 #include "model/action/action_logger.h"
@@ -194,6 +195,11 @@ checkResult:
 
 	if (anything) {
 		deluge::hid::display::Screensaver::noteActivity();
+		// A real turn aborts any active display-exerciser run, but not while actions are being
+		// deferred (SD routine): the abort repaints the UI, which is not safe from there.
+		if (!skipActioning) {
+			HIDSysexExerciser::notifyLocalInput();
+		}
 	}
 
 	return anything;

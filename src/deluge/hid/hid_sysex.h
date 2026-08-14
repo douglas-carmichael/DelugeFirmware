@@ -10,4 +10,8 @@ void sendOLEDDataDelta(MIDICable& cable, bool force);
 void send7SegData(MIDICable& cable);
 void sendDisplayIfChanged();
 void readBlock(MIDICable& cable);
+// Push-lease state, for the display exerciser (same semantics sendDisplayIfChanged() applies).
+bool pushLeaseActive();
+int32_t pushLeaseRemainingMs();
+MIDICable* pushCable();
 } // namespace HIDSysex

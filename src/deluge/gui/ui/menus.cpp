@@ -104,6 +104,7 @@
 #include "gui/menu_item/midi/device_send_clock.h"
 #include "gui/menu_item/midi/device_send_thru.h"
 #include "gui/menu_item/midi/devices.h"
+#include "gui/menu_item/midi/display_test.h"
 #include "gui/menu_item/midi/follow/follow_channel.h"
 #include "gui/menu_item/midi/follow/follow_feedback_automation.h"
 #include "gui/menu_item/midi/follow/follow_feedback_channel_type.h"
@@ -1241,6 +1242,7 @@ PLACE_SDRAM_BSS Submenu midiClockMenu{
         &tempoMagnitudeMatchingMenu,
     },
 };
+PLACE_SDRAM_BSS midi::DisplayTest midiDisplayTestMenu{STRING_FOR_DISPLAY_TEST};
 PLACE_SDRAM_BSS Submenu midiMenu{
     STRING_FOR_MIDI,
     {
@@ -1253,6 +1255,7 @@ PLACE_SDRAM_BSS Submenu midiMenu{
         &midiCommandsMenu,
         &midiInputDifferentiationMenu,
         &midi::devicesMenu,
+        &midiDisplayTestMenu,
     },
 };
 

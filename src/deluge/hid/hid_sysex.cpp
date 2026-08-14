@@ -4,6 +4,7 @@
 #include "gui/ui_timer_manager.h"
 #include "hid/display/oled.h"
 #include "hid/display/seven_segment.h"
+#include "hid/hid_sysex_exerciser.h"
 #include "io/midi/midi_device.h"
 #include "io/midi/midi_engine.h"
 #include "io/midi/sysex.h"
@@ -33,6 +34,10 @@ void HIDSysex::sysexReceived(MIDICable& cable, uint8_t* data, int32_t len) {
 
 	case 2:
 		readBlock(cable);
+		break;
+
+	case 3:
+		HIDSysexExerciser::commandReceived(cable, data, len);
 		break;
 
 	default:
@@ -85,6 +90,7 @@ void HIDSysex::sendDisplayIfChanged() {
 	// not exact, but if more than half than the serial buffer is still full,
 	// we need to slow down a little. (USB buffer is larger and should be consumed much quicker)
 	if (midiDisplayCable->sendBufferSpace() < 512) {
+		HIDSysexExerciser::onPushDeferred();
 		uiTimerManager.setTimer(TimerName::SYSEX_DISPLAY, 100);
 		return;
 	}
@@ -129,6 +135,7 @@ void HIDSysex::sendOLEDData(MIDICable& cable, bool rle) {
 		reply[9 + packed] = 0xf7;            // end of transmission
 		                                     // 		device->sendSysex(reply, packed + 7); //
 		cable.sendSysex(reply, packed + 10); //
+		HIDSysexExerciser::onFullSent(packed + 10);
 	}
 }
 
@@ -152,6 +159,7 @@ void HIDSysex::send7SegData(MIDICable& cable) {
 		reply[9 + packed_data_size] = 0xf7; // end of transmission
 		                                    //		device->sendSysex(reply, packed_data_size + 7);
 		cable.sendSysex(reply, packed_data_size + 10);
+		HIDSysexExerciser::onFullSent(packed_data_size + 10);
 	}
 }
 
@@ -208,6 +216,7 @@ void HIDSysex::sendOLEDDataDelta(MIDICable& cable, bool force) {
 	reply[10 + packed] = 0xf7; // end of transmission //
 	// device->sendSysex(reply, packed + 8);
 	cable.sendSysex(reply, packed + 11);
+	HIDSysexExerciser::onDeltaSent(packed + 11);
 }
 
 void HIDSysex::readBlock(MIDICable& cable) {
@@ -235,4 +244,26 @@ void HIDSysex::readBlock(MIDICable& cable) {
 	reply[9 + packed] = 0xf7;            // end of transmission
 	                                     // 		device->sendSysex(reply, packed + 7); //
 	cable.sendSysex(reply, packed + 10); //
+}
+
+bool HIDSysex::pushLeaseActive() {
+	// Mirrors sendDisplayIfChanged(): while the card is being accessed, incoming MIDI (and with it
+	// any queued lease renewal) is not processed, so an expired lease is still treated as live.
+	return midiDisplayCable != nullptr
+	       && (AudioEngine::audioSampleTimer <= midiDisplayUntil || currentlyAccessingCard != 0);
+}
+
+int32_t HIDSysex::pushLeaseRemainingMs() {
+	if (midiDisplayCable == nullptr) {
+		return 0;
+	}
+	int32_t remaining = midiDisplayUntil - (int32_t)AudioEngine::audioSampleTimer;
+	if (remaining <= 0) {
+		return 0;
+	}
+	return (int32_t)((int64_t)remaining * 1000 / kSampleRate);
+}
+
+MIDICable* HIDSysex::pushCable() {
+	return midiDisplayCable;
 }

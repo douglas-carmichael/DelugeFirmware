@@ -1105,6 +1105,10 @@ enum class String : size_t {
 	STRING_FOR_RESET_MIDI_FOLLOW,
 	STRING_FOR_RESET_MIDI_DEVICES,
 
+	// strings for the display link stress exerciser (hid_sysex_exerciser)
+	STRING_FOR_DISPLAY_TEST,
+	STRING_FOR_CANT_START_DISPLAY_TEST,
+
 	// string for removing audio clip timestretching
 	STRING_FOR_SET_CLIP_LENGTH_EQUAL_TO_SAMPLE_LENGTH,
 	STRING_FOR_CLIP_LENGTH_ADJUSTED,

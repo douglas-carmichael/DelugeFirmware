@@ -978,6 +978,8 @@
     "STRING_FOR_RESET_COMMUNITY_FEATURES": "Reset Community Features",
     "STRING_FOR_RESET_MIDI_FOLLOW": "Reset MIDI Follow",
     "STRING_FOR_RESET_MIDI_DEVICES": "Reset MIDI Devices",
+    "STRING_FOR_DISPLAY_TEST": "Display Test",
+    "STRING_FOR_CANT_START_DISPLAY_TEST": "Can't start display test while playing",
     "STRING_FOR_SET_CLIP_LENGTH_EQUAL_TO_SAMPLE_LENGTH": "Set Clip Length Equal to Sample Length",
     "STRING_FOR_CLIP_LENGTH_ADJUSTED": "Clip Length Adjusted",
     "STRING_FOR_CONVERT_TO_AUDIO": "Convert to Audio",

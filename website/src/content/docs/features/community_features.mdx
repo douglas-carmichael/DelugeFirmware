@@ -248,6 +248,14 @@ Here is a list of general improvements that have been made, ordered from newest 
 
 - (#2810) <Badge text="c1.3" variant="tip" /> Added new learnable global command `LOAD NEXT SONG` (which can be quickly learned holding `LEARN` and `LOAD` and sending a MIDI note or CC message). When the Deluge receives this command while it is playing, it will queue to load the next song within the folder of the current song (wraps around when reaching the end of the folder).
 
+- `Display Stress Test` - Added a display-link stress exerciser for validating external display
+  mirrors and the MIDI link they ride on: SysEx-commanded synthetic display traffic at a chosen rate
+  and payload profile, sent through the production display-push path, with every frame stamped
+  (sequence number + CRC) and device-side counters queryable over SysEx so loss, corruption,
+  reordering and throttling can be measured from the host. A local eyeball check lives in
+  `SETTINGS > MIDI > DISPLAY TEST` (any button, pad or encoder input exits it). Runs only while the
+  sequencer is stopped and not recording.
+
 ### 3.4 - Tempo & Swing
 
 - (#178) <Badge text="c1.0" variant="tip" /> New option (`FINE TEMPO KNOB` in the `COMMUNITY FEATURES` menu). Inverts the push+turn behavior of the `TEMPO`
