@@ -17,6 +17,14 @@ int32_t midiDisplayUntil = 0;
 uint8_t* oledDeltaImage = nullptr;
 bool oledDeltaForce = true;
 
+// Largest span sent as one display-push delta, in 8-byte units; 0 would mean uncapped. 24 units =
+// 192 source bytes, which worst-case (incompressible) RLE packs to 231 payload bytes -- at most
+// ~242 bytes on the wire -- comfortably below the >=250 B safe side of the empirically bracketed
+// (250..900 B) per-message size class where macOS 26's CoreMIDI feedback heuristic starts muting
+// third-party virtual sources. Capping also stops one ~300 ms full-span message from
+// head-of-line-blocking a DIN cable; ~24-unit chunks interleave with other traffic.
+constexpr int32_t kMaxPushChunkUnits = 24;
+
 void HIDSysex::sysexReceived(MIDICable& cable, uint8_t* data, int32_t len) {
 	if (len < 3) {
 		return;
@@ -161,18 +169,27 @@ void HIDSysex::sendOLEDDataDelta(MIDICable& cable, bool force) {
 
 	uint8_t* current = deluge::hid::display::OLED::oledCurrentImage[0];
 
-	int32_t first_change = 9000;
-	int32_t last_change = 0;
-	int32_t* blkdata_new = (int32_t*)current;
-	int32_t* blkdata_old = (int32_t*)oledDeltaImage;
-
 	const int32_t word_size = data_size >> 2;
 
 	if (force || oledDeltaForce) {
-		first_change = 0;
-		last_change = word_size - 1;
+		// Force means resend everything, but a full span must still go out in capped chunks.
+		// Instead of a continuation cursor, invalidate the shadow image: every byte becomes the
+		// complement of the live image, so every unit diffs as changed and the ordinary chunk loop
+		// below -- or any later call, if a deferral interrupts -- carries the remainder with no
+		// extra state.
+		for (int32_t i = 0; i < data_size; i++) {
+			oledDeltaImage[i] = current[i] ^ 0xFF;
+		}
+		oledDeltaForce = false;
 	}
-	else {
+
+	int32_t* blkdata_new = (int32_t*)current;
+	int32_t* blkdata_old = (int32_t*)oledDeltaImage;
+
+	while (true) {
+		int32_t first_change = 9000;
+		int32_t last_change = 0;
+
 		for (int32_t blk = 0; blk < word_size; blk++) {
 			if (blkdata_new[blk] != blkdata_old[blk]) {
 				if (first_change > blk) {
@@ -181,33 +198,46 @@ void HIDSysex::sendOLEDDataDelta(MIDICable& cable, bool force) {
 				last_change = blk;
 			}
 		}
-	}
 
-	if (first_change > word_size) {
-		return;
-	}
+		if (first_change > word_size) {
+			return; // in sync: every changed unit has been sent
+		}
 
-	int start = first_change / 2;
-	int len = (last_change / 2) - start + 1;
-	//	int8_t reply_hdr[5] = {0xf0, 0x7d, 0x02, 0x40, 0x02};
-	uint8_t reply_hdr[8] = {0xF0, 0x00, 0x21, 0x7B, 0x01, 0x02, 0x40, 0x02};
-	uint8_t* reply = midiEngine.sysex_fmt_buffer;
-	memcpy(reply, reply_hdr, sizeof(reply_hdr));
-	//	reply[5] = start;
-	reply[sizeof(reply_hdr) + 0] = start;
-	//  reply[6] = len;
-	reply[sizeof(reply_hdr) + 1] = len;
-	// 	int32_t packed = pack_8to7_rle(reply + 7, max_packed_size, current + 8 * start, 8 * len);
-	int32_t packed = pack_8to7_rle(reply + 10, max_packed_size, current + 8 * start, 8 * len);
-	if (packed <= 0) {
-		return;
+		// Same floor sendDisplayIfChanged() applies before the first chunk; only the sub-spans
+		// already sent are absorbed into oledDeltaImage, so a deferred remainder is re-found by
+		// the next re-diff, merged with anything newly drawn in the meantime.
+		if (cable.sendBufferSpace() < 512) {
+			uiTimerManager.setTimer(TimerName::SYSEX_DISPLAY, 100);
+			return;
+		}
+
+		int32_t start = first_change / 2;
+		int32_t len = (last_change / 2) - start + 1;
+		// Cap the span so no single message reaches the size class that trips macOS 26's CoreMIDI
+		// feedback heuristic. Chunks go out in ascending address order, so a client sees a frame
+		// complete exactly when the last (highest-addressed) chunk lands.
+		if (kMaxPushChunkUnits > 0 && len > kMaxPushChunkUnits) {
+			len = kMaxPushChunkUnits;
+		}
+		//	int8_t reply_hdr[5] = {0xf0, 0x7d, 0x02, 0x40, 0x02};
+		uint8_t reply_hdr[8] = {0xF0, 0x00, 0x21, 0x7B, 0x01, 0x02, 0x40, 0x02};
+		uint8_t* reply = midiEngine.sysex_fmt_buffer;
+		memcpy(reply, reply_hdr, sizeof(reply_hdr));
+		//	reply[5] = start;
+		reply[sizeof(reply_hdr) + 0] = start;
+		//  reply[6] = len;
+		reply[sizeof(reply_hdr) + 1] = len;
+		// 	int32_t packed = pack_8to7_rle(reply + 7, max_packed_size, current + 8 * start, 8 * len);
+		int32_t packed = pack_8to7_rle(reply + 10, max_packed_size, current + 8 * start, 8 * len);
+		if (packed <= 0) {
+			return;
+		}
+		memcpy(oledDeltaImage + (8 * start), current + (8 * start), 8 * len);
+		// reply[7 + packed] = 0xf7; // end of transmission
+		reply[10 + packed] = 0xf7; // end of transmission //
+		// device->sendSysex(reply, packed + 8);
+		cable.sendSysex(reply, packed + 11);
 	}
-	memcpy(oledDeltaImage + (8 * start), current + (8 * start), 8 * len);
-	oledDeltaForce = false;
-	// reply[7 + packed] = 0xf7; // end of transmission
-	reply[10 + packed] = 0xf7; // end of transmission //
-	// device->sendSysex(reply, packed + 8);
-	cable.sendSysex(reply, packed + 11);
 }
 
 void HIDSysex::readBlock(MIDICable& cable) {
