@@ -51,6 +51,8 @@ enum class TimerName {
 	SELECTED_NOTE_PULSE,
 	/// Idle countdown before the screensaver appears, then its frame clock while it shows
 	SCREENSAVER,
+	/// Turns the OLED MIDI TX/RX activity arrows off once traffic stops
+	MIDI_ACTIVITY,
 	/// Total number of timers
 	NUM_TIMERS
 };

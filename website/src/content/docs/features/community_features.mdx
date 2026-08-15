@@ -517,6 +517,15 @@ Here is a list of general improvements that have been made, ordered from newest 
   - The battery level menu item can be toggled on/off via the Community Features menu
   - This feature is `ON` by default and can be set to `ON` or `OFF` via `SETTINGS > COMMUNITY FEATURES > SHOW BATTERY LEVEL`
 
+### 3.38 - MIDI/CV Activity Indicator
+
+- <Badge text="c1.4" variant="tip" /> Added an optional MIDI/CV activity indicator to the OLED display
+  - Three small glyphs near the top-right of the screen flash while traffic passes: MIDI in (down arrow), MIDI out (up arrow) and CV/gate out (pulse symbol)
+  - MIDI clock, active sensing and SysEx are ignored so the arrows show musical traffic instead of staying lit while synced; the CV/gate lane likewise ignores the trigger-clock output
+  - The glyphs only draw into blank screen space (beside the tempo in Song/Arranger view, otherwise the top-right corner) and hide on screens whose top row is fully used, so no existing screen content is ever obscured
+  - OLED only - there is no 7-segment equivalent, and the menu item is hidden in 7-segment mode
+  - This feature is `OFF` by default and can be set to `ON` or `OFF` via `SETTINGS > COMMUNITY FEATURES > SHOW MIDI/CV ACTIVITY`
+
 ## 4. New Features Added
 
 Here is a list of features that have been added to the firmware as a list, grouped by category:

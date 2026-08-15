@@ -17,6 +17,7 @@
 
 #include "gui/ui_timer_manager.h"
 #include "definitions_cxx.hpp"
+#include "gui/midi_activity_indicator.h"
 #include "gui/ui/keyboard/keyboard_screen.h"
 #include "gui/ui/sound_editor.h"
 #include "gui/views/automation_view.h"
@@ -251,6 +252,10 @@ void UITimerManager::routine() {
 
 				case TimerName::SYSEX_DISPLAY:
 					HIDSysex::sendDisplayIfChanged();
+					break;
+
+				case TimerName::MIDI_ACTIVITY:
+					deluge::gui::midi_activity::timerEvent();
 					break;
 
 				// explicit fallthrough cases

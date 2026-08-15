@@ -18,6 +18,7 @@
 #include "processing/engines/cv_engine.h"
 #include "RZA1/intc/devdrv_intc.h"
 #include "definitions_cxx.hpp"
+#include "gui/midi_activity_indicator.h"
 #include "hid/display/display.h"
 #include "io/debug/log.h"
 #include "processing/engines/audio_engine.h"
@@ -199,6 +200,8 @@ void CVEngine::sendNote(bool on, uint8_t channel, int16_t note) {
 		return;
 	}
 
+	deluge::gui::midi_activity::notifyCVOut();
+
 	// Note-off
 	if (!on) {
 
@@ -240,6 +243,8 @@ void CVEngine::sendNote(bool on, uint8_t channel, int16_t note) {
 }
 
 void CVEngine::sendVoltageOut(uint8_t channel, uint16_t voltage) {
+	deluge::gui::midi_activity::notifyCVOut();
+
 	uint32_t output = (uint32_t)(0b00110000 | (1 << channel)) << 24;
 	output |= (uint32_t)voltage << 8;
 	// if we have a physical oled then we need to send via the pic
@@ -383,6 +388,8 @@ void CVEngine::updateRunOutput() {
 	if (gateChannels[WHICH_GATE_OUTPUT_IS_RUN].mode != GateType::SPECIAL) {
 		return;
 	}
+
+	deluge::gui::midi_activity::notifyCVOut();
 
 	bool runState = (playbackHandler.isEitherClockActive() && !playbackHandler.ticksLeftInCountIn);
 

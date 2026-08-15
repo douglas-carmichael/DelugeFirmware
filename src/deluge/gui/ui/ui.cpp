@@ -15,6 +15,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "gui/midi_activity_indicator.h"
 #include "gui/ui/root_ui.h"
 #include "gui/ui_timer_manager.h"
 #include "gui/views/view.h"
@@ -382,6 +383,8 @@ void doAnyPendingOLEDRendering() {
 			OLED::stopScrollingAnimation();
 			uiNavigationHierarchy[u]->renderOLED(deluge::hid::display::OLED::main);
 		}
+
+		deluge::gui::midi_activity::drawIndicator(deluge::hid::display::OLED::main);
 
 		// Don't need to mark dirty because clearMainImage has already done that for us
 

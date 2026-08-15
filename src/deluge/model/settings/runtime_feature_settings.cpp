@@ -217,6 +217,11 @@ void RuntimeFeatureSettings::init() {
 	    {l10n::getView(STRING_FOR_SHORTCUT_OVERLAY_MENU_AND_CLIP),
 	     static_cast<uint32_t>(RuntimeFeatureStateShortcutOverlay::MenuAndClip)},
 	};
+
+	// Show MIDI Activity
+	SetupOnOffSetting(settings[RuntimeFeatureSettingType::ShowMidiActivity],
+	                  STRING_FOR_COMMUNITY_FEATURE_SHOW_MIDI_ACTIVITY, "showMidiActivity",
+	                  RuntimeFeatureStateToggle::Off);
 }
 
 void RuntimeFeatureSettings::factoryReset(bool showPopup) {

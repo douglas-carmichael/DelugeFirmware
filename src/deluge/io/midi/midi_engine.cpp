@@ -18,6 +18,7 @@
 #include "io/midi/midi_engine.h"
 #include "definitions_cxx.hpp"
 #include "gui/l10n/l10n.h"
+#include "gui/midi_activity_indicator.h"
 #include "gui/ui/sound_editor.h"
 #include "hid/display/display.h"
 #include "hid/hid_sysex.h"
@@ -521,6 +522,8 @@ void MidiEngine::sendMidi(MIDISource source, MIDIMessage message, int32_t filter
 	*eventStackTop_ = source;
 	++eventStackTop_;
 
+	deluge::gui::midi_activity::notifySent(message);
+
 	bool sendDIN = MIDIDeviceManager::dinMIDIPorts.wantsToOutputMIDIOnChannel(message, filter);
 	if (sendUSB || sendDIN) {
 		queueMIDI(message, filter, sendUSB, sendDIN, midiDue_);
@@ -1005,6 +1008,8 @@ bool lastWasNoteOn = false;
 
 void MidiEngine::midiMessageReceived(MIDICable& cable, uint8_t statusType, uint8_t channel, uint8_t data1,
                                      uint8_t data2, uint32_t* timer) {
+
+	deluge::gui::midi_activity::notifyReceived(statusType, channel);
 
 	bool shouldDoMidiThruNow = cable.midi_thru;
 
