@@ -20,7 +20,9 @@
 #include "gui/views/instrument_clip_view.h"
 #include "hid/display/display.h"
 #include "io/midi/midi_engine.h"
+#include "model/drum/gm_percussion.h"
 #include "model/drum/non_audio_drum.h"
+#include "model/settings/runtime_feature_settings.h"
 #include "storage/storage_manager.h"
 #include "util/string.h"
 
@@ -125,6 +127,14 @@ std::string MIDIDrum::getDrumName() {
 		if (!drumName.empty()) {
 			buffer.append(drumName);
 			buffer.append("\n");
+		}
+		// With no name of its own, fall back to what General MIDI calls this note. Derived from the note, so it can
+		// never go stale when the row is re-learned or re-entered.
+		else if (runtimeFeatureSettings.isOn(RuntimeFeatureSettingType::MidiDrumRows)) {
+			if (char const* gmName = deluge::gm::percussionName(note)) {
+				buffer.append(gmName);
+				buffer.append("\n");
+			}
 		}
 		buffer.append("MIDI CH");
 		buffer.append(deluge::string::fromInt(channelToDisplay));

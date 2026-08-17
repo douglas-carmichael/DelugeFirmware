@@ -87,6 +87,8 @@
 #include "gui/menu_item/integer_range.h"
 #include "gui/menu_item/key_range.h"
 #include "gui/menu_item/keyboard/layout.h"
+#include "gui/menu_item/kit/default_midi_channel.h"
+#include "gui/menu_item/kit/midi_row_actions.h"
 #include "gui/menu_item/lfo/sync.h"
 #include "gui/menu_item/lfo/type.h"
 #include "gui/menu_item/master_transpose.h"
@@ -118,6 +120,8 @@
 #include "gui/menu_item/midi/sub.h"
 #include "gui/menu_item/midi/takeover.h"
 #include "gui/menu_item/midi/transpose.h"
+#include "gui/menu_item/midi_drum/channel.h"
+#include "gui/menu_item/midi_drum/note.h"
 #include "gui/menu_item/mod_fx/depth_patched.h"
 #include "gui/menu_item/mod_fx/depth_unpatched.h"
 #include "gui/menu_item/mod_fx/feedback.h"
@@ -1722,10 +1726,15 @@ PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuMIDIOrCV{
 };
 
 // Root menu for NonAudioDrums (MIDI and Gate drums)
+PLACE_SDRAM_BSS midi_drum::Note midiDrumNoteMenu{STRING_FOR_NOTE};
+PLACE_SDRAM_BSS midi_drum::Channel midiDrumChannelMenu{STRING_FOR_CHANNEL};
+
 PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuMidiDrum{
     STRING_FOR_MIDI,
     {
         &soundEditorRootDrumActionsMenu,
+        &midiDrumNoteMenu,
+        &midiDrumChannelMenu,
         &arpMenuMIDIOrCV,
         &randomizerMenu,
     },
@@ -1853,10 +1862,27 @@ PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuSongView{
     },
 };
 
+// Kit-wide MIDI row setup, for kits that drive external gear
+PLACE_SDRAM_BSS kit::DefaultMIDIChannel kitDefaultMIDIChannelMenu{STRING_FOR_DEFAULT_CHANNEL};
+PLACE_SDRAM_BSS kit::ApplyMIDIChannel kitApplyMIDIChannelMenu{STRING_FOR_APPLY_CHANNEL_TO_ALL};
+PLACE_SDRAM_BSS kit::GMDrumFill kitGMDrumFillMenu{STRING_FOR_GM_DRUM_FILL};
+PLACE_SDRAM_BSS kit::ClearRows kitClearRowsMenu{STRING_FOR_CLEAR_KIT_ROWS};
+
+PLACE_SDRAM_BSS kit::MIDIRowsSubmenu kitMIDIRowsMenu{
+    STRING_FOR_MIDI_ROWS,
+    {
+        &kitDefaultMIDIChannelMenu,
+        &kitApplyMIDIChannelMenu,
+        &kitGMDrumFillMenu,
+        &kitClearRowsMenu,
+    },
+};
+
 PLACE_SDRAM_BSS menu_item::Submenu kitGlobalFXActionsMenu{
     STRING_FOR_ACTIONS,
     {
         &editNameMenu,
+        &kitMIDIRowsMenu,
         &kitGlobalFXStemExportMenu,
     },
 };

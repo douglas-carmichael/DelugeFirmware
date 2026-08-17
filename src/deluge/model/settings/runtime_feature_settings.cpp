@@ -217,6 +217,15 @@ void RuntimeFeatureSettings::init() {
 	    {l10n::getView(STRING_FOR_SHORTCUT_OVERLAY_MENU_AND_CLIP),
 	     static_cast<uint32_t>(RuntimeFeatureStateShortcutOverlay::MenuAndClip)},
 	};
+
+	// MIDI Drum Rows
+	SetupOnOffSetting(settings[RuntimeFeatureSettingType::MidiDrumRows], STRING_FOR_COMMUNITY_FEATURE_MIDI_DRUM_ROWS,
+	                  "midiDrumRows", RuntimeFeatureStateToggle::Off);
+
+	// Skip New Drum Browser
+	SetupOnOffSetting(settings[RuntimeFeatureSettingType::SkipNewDrumBrowser],
+	                  STRING_FOR_COMMUNITY_FEATURE_SKIP_NEW_DRUM_BROWSER, "skipNewDrumBrowser",
+	                  RuntimeFeatureStateToggle::Off);
 }
 
 void RuntimeFeatureSettings::factoryReset(bool showPopup) {

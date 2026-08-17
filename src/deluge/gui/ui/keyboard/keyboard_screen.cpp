@@ -588,6 +588,12 @@ ActionResult KeyboardScreen::buttonAction(deluge::hid::Button b, bool on, bool i
 			if (output->type == OutputType::KIT) {
 				Kit* kit = (Kit*)output;
 				if (kit->selectedDrum) {
+					// This view can only ever target the selected Drum - there is no empty row to build on - so
+					// with the browser skipped every press here would be an overwrite.
+					if (InstrumentClipView::blockNewDrumOverExisting(kit->selectedDrum)) {
+						return ActionResult::DEALT_WITH;
+					}
+
 					exitAuditionMode();
 
 					char modelStackMemory[MODEL_STACK_MAX_SIZE];
@@ -598,7 +604,10 @@ ActionResult KeyboardScreen::buttonAction(deluge::hid::Button b, bool on, bool i
 					ModelStackWithNoteRow* modelStackWithNoteRow =
 					    instrumentClip->getNoteRowForDrum(modelStack, kit->selectedDrum);
 
-					instrumentClipView.enterDrumCreator(modelStackWithNoteRow, false);
+					// Both buttons make a brand new Drum here, so both are "new" gestures the user can ask to stay
+					// out of the way - the LOAD button is silkscreened "LOAD / NEW".
+					instrumentClipView.enterDrumCreator(modelStackWithNoteRow, false,
+					                                    !InstrumentClipView::shouldSkipNewDrumBrowser());
 				}
 			}
 		}

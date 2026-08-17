@@ -45,6 +45,7 @@
 #include "processing/stem_export/stem_export.h"
 #include "storage/audio/audio_file_manager.h"
 #include "storage/storage_manager.h"
+#include <algorithm>
 #include <cstring>
 
 namespace params = deluge::modulation::params;
@@ -117,6 +118,10 @@ bool Kit::writeDataToFile(Serializer& writer, Clip* clipForSavingOutputOnly, Son
 	}
 
 	GlobalEffectableForClip::writeAttributesToFile(writer, clipForSavingOutputOnly == nullptr);
+
+	if (defaultMIDIChannel != 0) {
+		writer.writeAttribute("defaultMIDIChannel", defaultMIDIChannel);
+	}
 
 	writer.writeOpeningTagEnd();
 	// Attributes end
@@ -307,6 +312,10 @@ doReadDrum:
 		else if (!strcmp(tagName, "MIDIInput")) {
 			midiInput.readNoteFromFile(reader);
 			reader.exitTag();
+		}
+		else if (!strcmp(tagName, "defaultMIDIChannel")) {
+			defaultMIDIChannel = std::clamp<int32_t>(reader.readTagOrAttributeValueInt(), 0, 15);
+			reader.exitTag("defaultMIDIChannel");
 		}
 		else {
 			Error result = GlobalEffectableForClip::readTagFromFile(reader, tagName, &paramManager,

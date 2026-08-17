@@ -188,6 +188,19 @@ public:
 	int32_t setupForExitingScaleMode();
 	void setupChangingOfRootNote(int32_t newRootNote, int32_t yDisplay = (kDisplayHeight / 2));
 	void deleteDrum(SoundDrum* drum);
+
+	// Kit-wide MIDI row operations, driven from the kit's MIDI Rows menu. All three need clip, Kit and a ModelStack
+	// together, which is why they live here beside createDrumForAuditionedNoteRow() rather than on Kit.
+	/// Sets every MIDIDrum in the kit to the kit's default channel. Returns how many rows changed. numMidiRows, if
+	/// given, receives how many MIDI rows the kit holds at all - without it a caller can't tell "they were already
+	/// on that channel" from "there are none", since both change nothing.
+	int32_t applyDefaultMIDIChannelToRows(int32_t* numMidiRows = nullptr);
+	/// Adds a MIDIDrum row on the kit's default channel for each General MIDI drum-kit note not already used by a
+	/// MIDIDrum in this kit. Returns how many rows were added, or -1 if it ran out of RAM.
+	int32_t fillWithGMDrumRows();
+	/// Removes every drum and note row from the kit, leaving one empty row. Not undoable.
+	void clearAllKitRows();
+
 	void cancelAllAuditioning();
 	void modEncoderButtonAction(uint8_t whichModEncoder, bool on) override;
 
@@ -347,7 +360,15 @@ public:
 	const char* getFillString(uint8_t fill);
 
 	// public for velocity keyboard view to access
-	void enterDrumCreator(ModelStackWithNoteRow* modelStack, bool doRecording = false);
+	/// Creates a blank SoundDrum on the given NoteRow. With openBrowser false the drum is still made and selected,
+	/// but no file browser or recorder is opened, leaving the user in the clip view.
+	void enterDrumCreator(ModelStackWithNoteRow* modelStack, bool doRecording = false, bool openBrowser = true);
+	/// True when the "new kit" and "new drum" gestures should stay out of the sample browser.
+	static bool shouldSkipNewDrumBrowser();
+	/// True when a browser-skipping "new drum" gesture must leave a row alone because it already holds this Drum.
+	/// Says so on screen, since the gesture would otherwise look dead. False whenever the browser is being shown -
+	/// there, replacing the row's Drum is the whole point of the gesture.
+	static bool blockNewDrumOverExisting(Drum* existingDrum);
 
 	ModControllableAudio* getModControllableAudioOrNone() override;
 

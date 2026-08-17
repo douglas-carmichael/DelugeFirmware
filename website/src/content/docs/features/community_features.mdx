@@ -1405,6 +1405,40 @@ Note: these settings are saved to `SETTINGS/CommunityFeatures.XML` on your SD ca
   - `Off` disables the coloured shortcut overlay.
   - `On - Menu only (MENU)` (default) shows it while holding Shift in a sound editing menu.
   - `On - Menu + Clip (FULL)` also shows it while holding Shift in instrument and audio clip views.
+- `MIDI Drum Rows (MDRO)` <Badge text="c1.4" variant="tip" />
+  - When On, adds tools for building a kit that sequences percussion on external gear, where each row is a `MIDI` drum
+    sending one note on one channel. Without these, the only way to set a row's note or channel is holding its audition
+    pad and turning the gold encoders.
+  - Selecting a `MIDI` drum row and opening its menu gains `NOTE` and `CHANNEL` items, edited with the select encoder at
+    one value per detent. `NOTE` reads as the number and the note name, e.g. `36 C1`.
+  - With `NOTE` open, hold :key[learn] and hit the pad on your external device: the row takes that note number and the
+    channel it arrived on. Useful for gear that isn't mapped to General MIDI, where you don't know the note numbers.
+  - With `AFFECT ENTIRE` on, the kit's `ACTIONS` menu gains a `MIDI ROWS` submenu:
+    - `DEFAULT CHANNEL` - the channel new `MIDI` rows in this kit start on, so a kit aimed at one device doesn't need
+      the channel set again on every row. Saved with the kit.
+    - `APPLY CHANNEL TO ALL` - points every existing `MIDI` row in the kit at that channel.
+    - `GM DRUM FILL` - adds a `MIDI` row for each General MIDI drum-kit note (35 to 59) the kit doesn't already send.
+      Notes already present are left alone, so filling twice won't duplicate rows.
+    - `CLEAR ROWS` - after confirming, empties the kit so its rows can be rebuilt by learning or entering notes. This
+      cannot be undone.
+  - A `MIDI` row with no name of its own, whose note falls in the General MIDI percussion map (35 to 81), shows the
+    General MIDI instrument name, e.g. `Bass Drum 1`. The name follows the note, so it stays correct when a row is
+    re-learned. Naming a row overrides it, and turning this feature Off removes the names entirely - useful when your
+    gear isn't mapped to General MIDI.
+- `Skip New Drum Browser (SNDB)` <Badge text="c1.4" variant="tip" />
+  - When On, creating a new kit with :key[shift] + :key[kit] gives it one empty row instead of opening the audio
+    file browser, and holding an audition pad and pressing :key[load] or :key[kit] makes a new drum without the
+    browser. Handy when you're building a kit of `MIDI` rows, where that screen is never wanted.
+  - Both of those audition-pad gestures make a brand new drum, so both count as "new" here - :key[load] is the
+    :key[LOAD / NEW] button. Holding an audition pad and pressing :key[record] still opens the audio recorder.
+  - While this is On, those gestures will not replace a row that already has a drum - the row is left alone and the
+    display reads `Row already has a drum` (`USED`). Replacing a row's drum can't be undone: backing out of the
+    browser hands the row whichever drum in the kit is unassigned first, not the one it displaced, so a stray press
+    would otherwise cost you that row's sound, its name and, on a `MIDI` row, its note and channel. New drums come
+    from the empty audition pad above the kit's rows. With the setting Off the gesture replaces the row's drum and
+    opens the browser, exactly as before.
+  - To pick an audio file for a row while this is On, use the sound editor: press the row's audition pad and
+    :key[select], then `OSC 1` > `FILE`. Or turn the setting Off to get the browser back on the "new" gestures.
 
 ## 6. Sysex Handling
 

@@ -148,6 +148,10 @@ public:
 	Drum* firstDrum;
 	Drum* selectedDrum;
 
+	/// MIDI channel newly created MIDIDrums start on, so a kit aimed at one piece of external gear doesn't need the
+	/// channel set per row. Each MIDIDrum still owns its own channel and may differ from this.
+	uint8_t defaultMIDIChannel{0};
+
 	OrderedResizeableArrayWith32bitKey drumsWithRenderingActive;
 
 	ModelStackWithAutoParam* getModelStackWithParam(ModelStackWithTimelineCounter* modelStack, Clip* clip,

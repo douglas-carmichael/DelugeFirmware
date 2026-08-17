@@ -61,6 +61,7 @@
 #include "model/consequence/consequence_note_row_horizontal_shift.h"
 #include "model/consequence/consequence_note_row_length.h"
 #include "model/drum/drum.h"
+#include "model/drum/gm_percussion.h"
 #include "model/drum/midi_drum.h"
 #include "model/instrument/kit.h"
 #include "model/instrument/melodic_instrument.h"
@@ -71,6 +72,7 @@
 #include "model/note/note_row.h"
 #include "model/scale/utils.h"
 #include "model/settings/runtime_feature_settings.h"
+#include "model/song/clip_iterators.h"
 #include "model/song/song.h"
 #include "modulation/automation/auto_param.h"
 #include "modulation/params/param_manager.h"
@@ -460,7 +462,9 @@ ActionResult InstrumentClipView::buttonAction(deluge::hid::Button b, bool on, bo
 
 			ModelStackWithNoteRow* modelStackWithNoteRow = modelStack->addNoteRow(noteRowIndex, newNoteRow);
 
-			enterDrumCreator(modelStackWithNoteRow, false);
+			// Both buttons make a brand new Drum here, so both are "new" gestures the user can ask to stay out of
+			// the way - the LOAD button is silkscreened "LOAD / NEW".
+			enterDrumCreator(modelStackWithNoteRow, false, !shouldSkipNewDrumBrowser());
 
 			uiNeedsRendering(this, 0, 1 << yDisplayOfNewNoteRow);
 		}
@@ -477,10 +481,16 @@ ActionResult InstrumentClipView::buttonAction(deluge::hid::Button b, bool on, bo
 
 			// Auditioning drum
 			if (getCurrentOutputType() == OutputType::KIT) {
-				cutAuditionedNotesToOne();
 				int32_t noteRowIndex;
 				NoteRow* noteRow =
 				    getCurrentInstrumentClip()->getNoteRowOnScreen(lastAuditionedYDisplay, currentSong, &noteRowIndex);
+
+				// Checked before anything is disturbed, so a refused press leaves the audition running.
+				if (blockNewDrumOverExisting(noteRow->drum)) {
+					return ActionResult::DEALT_WITH;
+				}
+
+				cutAuditionedNotesToOne();
 				cancelAllAuditioning();
 				if (noteRow->drum) {
 					noteRow->drum->drumWontBeRenderedForAWhile();
@@ -490,7 +500,7 @@ ActionResult InstrumentClipView::buttonAction(deluge::hid::Button b, bool on, bo
 				ModelStackWithNoteRow* modelStack =
 				    currentSong->setupModelStackWithCurrentClip(modelStackMemory)->addNoteRow(noteRowIndex, noteRow);
 
-				enterDrumCreator(modelStack, false);
+				enterDrumCreator(modelStack, false, !shouldSkipNewDrumBrowser());
 			}
 
 			// Auditioning synth
@@ -1035,6 +1045,12 @@ ramError:
 
 		if (!newDrum) {
 			goto ramError;
+		}
+
+		// Start on the kit's default channel, so a kit pointed at one piece of external gear doesn't need the
+		// channel set again on every row.
+		if (drumType == DrumType::MIDI) {
+			((MIDIDrum*)newDrum)->channel = kit->defaultMIDIChannel;
 		}
 
 		ParamManager paramManager;
@@ -1760,7 +1776,11 @@ bool InstrumentClipView::createNewInstrument(OutputType newOutputType, bool is_d
 		recalculateColours();
 		uiNeedsRendering(getRootUI());
 
-		if (newOutputType == OutputType::KIT) {
+		// A new kit normally lands in the drum creator, which makes a blank sample Drum on row 0 and opens the
+		// browser. Skipping it leaves a kit with no Drums at all, which is the right blank slate: seeding a sample
+		// Drum here and then converting row 0 to MIDI would leave the sample Drum orphaned in the kit, since
+		// createDrumForAuditionedNoteRow() reassigns the row without removing the old Drum.
+		if (newOutputType == OutputType::KIT && !shouldSkipNewDrumBrowser()) {
 			char modelStackMemory[MODEL_STACK_MAX_SIZE];
 			ModelStackWithTimelineCounter* modelStack = currentSong->setupModelStackWithCurrentClip(modelStackMemory);
 
@@ -5673,7 +5693,27 @@ void InstrumentClipView::cancelAllAuditioning() {
 	}
 }
 
-void InstrumentClipView::enterDrumCreator(ModelStackWithNoteRow* modelStack, bool doRecording) {
+bool InstrumentClipView::shouldSkipNewDrumBrowser() {
+	return runtimeFeatureSettings.isOn(RuntimeFeatureSettingType::SkipNewDrumBrowser);
+}
+
+bool InstrumentClipView::blockNewDrumOverExisting(Drum* existingDrum) {
+	if (existingDrum == nullptr || !shouldSkipNewDrumBrowser()) {
+		return false;
+	}
+
+	// This gesture always builds a brand new Drum, so on an occupied row it is a replacement - and nothing
+	// reliably undoes one. SampleBrowser::exitAction() looks like it does: back out without picking a file and it
+	// deletes the Drum just made. But deleteDrum() then hands the row getFirstUnassignedDrum(), the first
+	// unassigned Drum in kit order rather than the one displaced, and createDrumForAuditionedNoteRow() orphans a
+	// blank SoundDrum on every MIDI conversion - so a kit of MIDI rows always has an orphan sorting ahead of the
+	// displaced Drum, and the row comes back blank. Confirmed on hardware. With the browser skipped there is no
+	// revert at all, so refuse: new Drums come from the empty row above the kit's rows.
+	display->displayPopup(deluge::l10n::get(deluge::l10n::String::STRING_FOR_ROW_ALREADY_HAS_DRUM));
+	return true;
+}
+
+void InstrumentClipView::enterDrumCreator(ModelStackWithNoteRow* modelStack, bool doRecording, bool openBrowser) {
 
 	D_PRINTLN("enterDrumCreator");
 
@@ -5728,6 +5768,13 @@ doDisplayError:
 	kit->beenEdited();
 
 	setSelectedDrum(newDrum); // Does this really need to render?
+
+	// The drum is made either way; the caller just doesn't always want a browser thrown up over the clip view.
+	if (!openBrowser) {
+		drawDrumName(newDrum);
+		uiNeedsRendering(getRootUI());
+		return;
+	}
 
 	// This operation targets the new drum, even if a previous grid-pad action left
 	// the editor configured for kit-global FX while Affect Entire was enabled.
@@ -5831,6 +5878,203 @@ void InstrumentClipView::deleteDrum(SoundDrum* drum) {
 
 	// We should repopulateNoteRowsOnscreen() and everything, but this will only be called just before the UI
 	// sessions starts again anyway
+}
+
+namespace {
+/// True if any Clip in the song still points a NoteRow at this Drum.
+bool drumIsUsedByAnyClip(Kit* kit, Drum* drum) {
+	for (InstrumentClip* clip : InstrumentClips::everywhere(currentSong)) {
+		if (clip->output == kit && clip->getNoteRowForDrum(drum)) {
+			return true;
+		}
+	}
+	return false;
+}
+} // namespace
+
+int32_t InstrumentClipView::applyDefaultMIDIChannelToRows(int32_t* numMidiRows) {
+	if (numMidiRows) {
+		*numMidiRows = 0;
+	}
+
+	Kit* kit = getCurrentKit();
+	if (!kit) {
+		return 0;
+	}
+
+	int32_t numChanged = 0;
+
+	for (Drum* drum = kit->firstDrum; drum; drum = drum->next) {
+		if (drum->type != DrumType::MIDI) {
+			continue;
+		}
+
+		if (numMidiRows) {
+			(*numMidiRows)++;
+		}
+
+		auto* midiDrum = (MIDIDrum*)drum;
+		if (midiDrum->channel == kit->defaultMIDIChannel) {
+			continue;
+		}
+
+		// Don't strand a note-on over on the old channel.
+		midiDrum->killAllVoices();
+		midiDrum->channel = kit->defaultMIDIChannel;
+		numChanged++;
+	}
+
+	if (numChanged) {
+		kit->beenEdited();
+	}
+
+	return numChanged;
+}
+
+int32_t InstrumentClipView::fillWithGMDrumRows() {
+	Kit* kit = getCurrentKit();
+	if (!kit) {
+		return 0;
+	}
+	InstrumentClip* clip = getCurrentInstrumentClip();
+
+	actionLogger.deleteAllLogs(); // Can't undo past this!
+
+	char modelStackMemory[MODEL_STACK_MAX_SIZE];
+	ModelStackWithTimelineCounter* modelStack = currentSong->setupModelStackWithCurrentClip(modelStackMemory);
+
+	// Rows are appended, so anything already here stays below the fill. Remember how many there were: a fresh kit
+	// carries one empty drumless row, and leaving it in place strands a dead pad under the filled rows.
+	int32_t numRowsBeforeFill = clip->noteRows.getNumElements();
+
+	// Leave alone any note the kit already sends on this channel, so filling twice doesn't duplicate rows.
+	auto kitAlreadySends = [kit](int32_t note) {
+		for (Drum* drum = kit->firstDrum; drum; drum = drum->next) {
+			if (drum->type != DrumType::MIDI) {
+				continue;
+			}
+			auto* midiDrum = static_cast<MIDIDrum*>(drum);
+			if (midiDrum->note == note && midiDrum->channel == kit->defaultMIDIChannel) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	int32_t numAdded = 0;
+	bool ranOutOfRAM = false;
+
+	for (int32_t note = deluge::gm::kFirstDrumKitNote; note <= deluge::gm::kLastDrumKitNote && !ranOutOfRAM; note++) {
+		if (kitAlreadySends(note)) {
+			continue;
+		}
+
+		AudioEngine::routineWithClusterLoading(); // Keep audio alive across a long fill
+
+		// Row before Drum: if RAM runs out here we're left with one spare empty row, which the user can see and
+		// delete. The other order would leave a Drum nothing points at, which the next new row would silently adopt.
+		int32_t noteRowIndex;
+		NoteRow* newNoteRow = clip->createNewNoteRowForKit(modelStack, false, &noteRowIndex);
+		if (!newNoteRow) {
+			ranOutOfRAM = true;
+			break;
+		}
+
+		Drum* newDrum = StorageManager::createNewDrum(DrumType::MIDI);
+		if (!newDrum) {
+			ranOutOfRAM = true;
+			break;
+		}
+
+		auto* newMIDIDrum = static_cast<MIDIDrum*>(newDrum);
+		newMIDIDrum->channel = kit->defaultMIDIChannel;
+		newMIDIDrum->note = note;
+		kit->addDrum(newDrum);
+
+		// Assign explicitly rather than letting createNewNoteRowForKit() pick: it takes the kit's first *unassigned*
+		// Drum, which needn't be the one we just made.
+		ModelStackWithNoteRow* modelStackWithNoteRow = modelStack->addNoteRow(noteRowIndex, newNoteRow);
+		newNoteRow->setDrum(newDrum, kit, modelStackWithNoteRow);
+
+		numAdded++;
+	}
+
+	// Commit whatever got made, even on a partial fill - those rows are real and on screen.
+	if (numAdded) {
+		// Drop any row that was already here but can't sound - the empty drumless row a fresh kit starts with. Only
+		// rows from before the fill are considered, so nothing the user built is touched, and one row always
+		// survives. Walking backwards keeps the indices of the ones still to check valid.
+		for (int32_t i = numRowsBeforeFill - 1; i >= 0 && clip->noteRows.getNumElements() > 1; i--) {
+			NoteRow* row = clip->noteRows.getElement(i);
+			if (!row->drum && row->hasNoNotes()) {
+				clip->deleteNoteRow(modelStack, i);
+			}
+		}
+
+		kit->beenEdited();
+		clip->yScroll = 0; // Show the bottom of the fill, where the kick and snare are
+		clip->ensureScrollWithinKitBounds();
+		recalculateColours();
+		uiNeedsRendering(getRootUI());
+	}
+
+	return ranOutOfRAM ? -1 : numAdded;
+}
+
+void InstrumentClipView::clearAllKitRows() {
+	Kit* kit = getCurrentKit();
+	if (!kit) {
+		return;
+	}
+	InstrumentClip* clip = getCurrentInstrumentClip();
+
+	actionLogger.deleteAllLogs(); // Can't undo past this!
+	cancelAllAuditioning();
+	kit->cutAllSound(); // Also gets the drums out of drumsWithRenderingActive before we free any of them
+
+	char modelStackMemory[MODEL_STACK_MAX_SIZE];
+	ModelStackWithTimelineCounter* modelStack = currentSong->setupModelStackWithCurrentClip(modelStackMemory);
+
+	// Drop the notes first, so deleting rows can't leave sequenced notes behind.
+	clip->clear(nullptr, modelStack, true, true);
+
+	// deleteNoteRow() unassigns each row's Drum on the way out. One row always has to survive.
+	while (clip->noteRows.getNumElements() > 1) {
+		AudioEngine::routineWithClusterLoading();
+		clip->deleteNoteRow(modelStack, clip->noteRows.getNumElements() - 1);
+	}
+
+	if (clip->noteRows.getNumElements()) {
+		NoteRow* remaining = clip->noteRows.getElement(0);
+		ModelStackWithNoteRow* modelStackWithNoteRow = modelStack->addNoteRow(0, remaining);
+		remaining->setDrum(nullptr, kit, modelStackWithNoteRow);
+	}
+
+	clip->yScroll = 0;
+	setSelectedDrum(nullptr);
+
+	// Free every Drum no Clip points at any more. Skipping this would leave drums that nothing can reach but that
+	// still get saved, and createNewNoteRowForKit() would silently re-adopt them into the rows built next.
+	Drum* drum = kit->firstDrum;
+	while (drum) {
+		Drum* next = drum->next;
+		if (!drumIsUsedByAnyClip(kit, drum)) {
+			kit->removeDrum(drum);
+			if (drum->type == DrumType::SOUND) {
+				currentSong->deleteBackedUpParamManagersForModControllable((SoundDrum*)drum);
+			}
+			void* toDealloc = dynamic_cast<void*>(drum);
+			drum->~Drum();
+			delugeDealloc(toDealloc);
+		}
+		drum = next;
+	}
+
+	AudioEngine::mustUpdateReverbParamsBeforeNextRender = true;
+
+	kit->beenEdited();
+	recalculateColours();
+	uiNeedsRendering(getRootUI());
 }
 
 void InstrumentClipView::someAuditioningHasEnded(bool recalculateLastAuditionedNoteOnScreen) {
