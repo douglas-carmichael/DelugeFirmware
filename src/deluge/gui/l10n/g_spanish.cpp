@@ -835,7 +835,7 @@ PLACE_SDRAM_DATA Language spanish{
         {STRING_FOR_TITLE_AUDIO_FILES, "Archivos audio"},
         {STRING_FOR_TITLE_DX7_SYX_FILES, "Archivos DX7"},
         {STRING_FOR_TITLE_LOAD_SONG, "Cargar cancion"},
-        {STRING_FOR_TITLE_SAVE_SONG, "Guardar cancion"},
+        {STRING_FOR_TITLE_SAVE_SONG, "Guard. cancion"},
         {STRING_FOR_TITLE_LOAD_SYNTH, "Cargar sinte"},
         {STRING_FOR_TITLE_SAVE_SYNTH, "Guardar sinte"},
         {STRING_FOR_TITLE_LOAD_KIT, "Cargar kit"},

@@ -3,6 +3,9 @@
 
 Replicates the Canvas glyph metrics (getCharIndex folding, per-glyph advance) for the
 two title contexts that draw without clipping or scrolling, plus popup word-wrap limits.
+Screen titles are measured like Canvas::getStringWidthInPixels(): pair kerning (read from
+kKerningRules in canvas.cpp, so it follows upstream changes) and the 1px offset drawChar()
+gives each glyph by centring it in its draw box.
 Run from anywhere: python3 contrib/l10n/width_audit.py french.json german.json ...
 Exits non-zero if any string breaks a budget English respects.
 """
@@ -45,6 +48,34 @@ def parse_font_desc(name):
 
 
 FONT9 = parse_font_desc("font_metric_bold_9px_desc")
+TITLE_TEXT_HEIGHT = 10  # kTextTitleSizeY, which Canvas draws in the bold 9px font
+
+
+def parse_kerning_rules():
+    src = (REPO / "src/deluge/hid/display/oled_canvas/canvas.cpp").read_text()
+    rules = {}
+    for height, prev, cur, adjustment in re.findall(
+        r"\.text_height = (\d+), \.previous_char = '(\\.|[^'])', "
+        r"\.current_char = '(\\.|[^'])', \.adjustment = (-?\d+)",
+        src,
+    ):
+        rules[(int(height), prev[-1], cur[-1])] = int(adjustment)
+    # A table this can't read would silently measure every title without kerning
+    if not rules or len(rules) != src.count("{.text_height ="):
+        sys.exit("width_audit: can't parse kKerningRules in canvas.cpp")
+    return rules
+
+
+KERNING = parse_kerning_rules()
+
+
+def kerning(prev, cur):
+    # getPreviousCharSpacingAdjustmentInPixels() at the title text height
+    if prev == " " or cur == " ":
+        return 0
+    if prev == "-" or cur == "-":
+        return 1
+    return KERNING.get((TITLE_TEXT_HEIGHT, prev.upper(), cur.upper()), 0)
 
 
 def char_index(c):
@@ -59,13 +90,19 @@ def char_index(c):
 
 
 def width_bold9(s):
-    total = 0
+    # Each glyph is drawn centred in its draw box, 1px right of the cursor, so the last
+    # glyph ends 1px past the cursor advance
+    advance = glyph_end = 0
     for i, c in enumerate(s):
         idx = char_index(c)
         w = 0 if idx <= 0 or idx >= len(FONT9) else FONT9[idx]
-        spacing = 0 if i == len(s) - 1 else (5 if c == " " else 2)
-        total += w + spacing
-    return total
+        draw_spacing = 5 if c == " " else 2
+        if i:
+            advance += kerning(s[i - 1], c)
+        if w:
+            glyph_end = max(glyph_end, advance + (draw_spacing >> 1) + w)
+        advance += w + (0 if i == len(s) - 1 else draw_spacing)
+    return max(advance, glyph_end)
 
 
 def width_mono(s):

@@ -515,7 +515,7 @@ PLACE_SDRAM_DATA Language french{
         {STRING_FOR_MIDI_DEVICE_DEFINITION_LINKED, "Fichier Lie"},
         {STRING_FOR_BANK, "BANQUE"},
         {STRING_FOR_MIDI_BANK, "Banque MIDI"},
-        {STRING_FOR_MIDI_SUB_BANK, "Sous-banque MIDI"},
+        {STRING_FOR_MIDI_SUB_BANK, "Sous-banq. MIDI"},
         {STRING_FOR_REVERSE, "INVERSE"},
         {STRING_FOR_WAVEFORM, "FORME D'ONDE"},
         {STRING_FOR_FREQUENCY, "Frequence"},
