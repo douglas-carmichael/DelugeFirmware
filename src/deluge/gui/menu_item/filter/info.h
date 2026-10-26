@@ -20,6 +20,7 @@
 #include "gui/ui/sound_editor.h"
 #include "model/mod_controllable/filters/filter_config.h"
 #include "model/mod_controllable/mod_controllable_audio.h"
+#include "model/settings/runtime_feature_settings.h"
 #include "modulation/patch/patch_cable_set.h"
 
 namespace deluge::gui::menu_item::filter {
@@ -47,6 +48,12 @@ public:
 			return soundEditor.currentModControllable->hpfMode;
 		}
 	}
+	/// The acid LPF mode is on offer once its community feature is on, and always for a sound that uses it
+	static bool isAcidOffered() {
+		return soundEditor.currentModControllable->lpfMode == ::FilterMode::ACID
+		       || runtimeFeatureSettings.get(RuntimeFeatureSettingType::EnableAcidFilter)
+		              == RuntimeFeatureStateToggle::On;
+	}
 	int32_t getModeValue() const {
 		if (slot == FilterSlot::HPF) {
 			return util::to_underlying(soundEditor.currentModControllable->hpfMode) - kFirstHPFMode;
@@ -54,7 +61,12 @@ public:
 		else {
 			// Off is located past the HPFLadder, which isn't an option for the low pass filter (should it be?)
 			int32_t selection = util::to_underlying(soundEditor.currentModControllable->lpfMode);
-			return std::min(selection, kNumLPFModes);
+			selection = std::min(selection, kNumLPFModes);
+			// Without the acid mode on offer, the options after it move up one
+			if (!isAcidOffered() && selection > util::to_underlying(::FilterMode::ACID)) {
+				selection -= 1;
+			}
+			return selection;
 		}
 	}
 	void setMode(int32_t value) const { setModeForModControllable(value, soundEditor.currentModControllable); }
@@ -63,6 +75,9 @@ public:
 			modControllable->hpfMode = static_cast<FilterMode>(value + kFirstHPFMode);
 		}
 		else {
+			if (!isAcidOffered() && value >= util::to_underlying(::FilterMode::ACID)) {
+				value += 1;
+			}
 			// num lpf modes counts off but there's HPF modes in the middle
 			if (value >= kNumLPFModes) {
 				modControllable->lpfMode = FilterMode::OFF;

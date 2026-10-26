@@ -1401,6 +1401,11 @@ char const* ModControllableAudio::getFilterTypeDisplayName(FilterType currentFil
 
 void ModControllableAudio::switchLPFMode() {
 	lpfMode = static_cast<FilterMode>((util::to_underlying(lpfMode) + 1) % kNumLPFModes);
+	// The acid mode is on offer once its community feature is on
+	if (lpfMode == FilterMode::ACID
+	    && runtimeFeatureSettings.get(RuntimeFeatureSettingType::EnableAcidFilter) != RuntimeFeatureStateToggle::On) {
+		lpfMode = static_cast<FilterMode>(util::to_underlying(lpfMode) + 1);
+	}
 }
 
 // for future use with FM
@@ -1439,6 +1444,8 @@ char const* ModControllableAudio::getLPFModeDisplayName() {
 		return l10n::get(STRING_FOR_24DB_LADDER);
 	case FilterMode::TRANSISTOR_24DB_DRIVE:
 		return l10n::get(STRING_FOR_DRIVE);
+	case FilterMode::ACID:
+		return l10n::get(STRING_FOR_ACID);
 	case FilterMode::SVF_BAND:
 		return l10n::get(STRING_FOR_SVF_BAND);
 	case FilterMode::SVF_NOTCH:

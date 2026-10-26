@@ -41,6 +41,7 @@ number of samples, so the result doesn't depend on the Deluge's render window si
   a triangle oscillator.
 - Menus are in `gui/menu_item/lxr/`, under SOUND > DRUM SYNTH and SELECT on oscillator 1's TYPE. The type is on
   offer once the community feature "Drum Synth Engine" is on.
+- The LXR filter's LP2 type is also the Deluge's "Acid" LPF mode, see `dsp/filter/acid.h`.
 
 ## Differences from the LXR
 

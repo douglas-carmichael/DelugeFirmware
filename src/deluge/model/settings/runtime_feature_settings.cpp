@@ -221,6 +221,10 @@ void RuntimeFeatureSettings::init() {
 	// EnableLxrEngine
 	SetupOnOffSetting(settings[RuntimeFeatureSettingType::EnableLxrEngine], STRING_FOR_COMMUNITY_FEATURE_LXR_ENGINE,
 	                  "enableDrumSynthEngine", RuntimeFeatureStateToggle::Off);
+
+	// EnableAcidFilter
+	SetupOnOffSetting(settings[RuntimeFeatureSettingType::EnableAcidFilter], STRING_FOR_COMMUNITY_FEATURE_ACID_FILTER,
+	                  "enableAcidFilter", RuntimeFeatureStateToggle::Off);
 }
 
 void RuntimeFeatureSettings::factoryReset(bool showPopup) {

@@ -26,6 +26,7 @@ enum class FilterMode {
 	TRANSISTOR_12DB,
 	TRANSISTOR_24DB,
 	TRANSISTOR_24DB_DRIVE, // filter logic relies on ladders being first and contiguous
+	ACID,                  // the drum synth engine's LP2 filter, see dsp/filter/acid.h
 	SVF_BAND,              // first HPF mode
 	SVF_NOTCH,             // last LPF mode
 	HPLADDER,
@@ -54,10 +55,12 @@ FilterMode stringToLPFType(char const* string);
 
 namespace deluge::dsp::filter {
 
-enum class FilterFamily { LP_LADDER, SVF, HP_LADDER, NONE };
-constexpr uint8_t kNumFamilies = 3;
+enum class FilterFamily { LP_LADDER, ACID, SVF, HP_LADDER, NONE };
+constexpr uint8_t kNumFamilies = 4;
 enum LpLadderType { LP12, LP24, DRIVE };
 constexpr uint8_t kNumLadders = 3;
+enum AcidType { LP2 };
+constexpr uint8_t kNumAcid = 1;
 enum SVFType { BAND, NOTCH };
 constexpr uint8_t kNumSVF = 2;
 enum HPFType { HP12 };
@@ -65,7 +68,7 @@ constexpr uint8_t kNumHPLadders = 1;
 
 using specificFilterType = uint8_t;
 // must match order of filter family declaration for indexing to work
-constexpr uint8_t numForVariant[kNumFamilies] = {kNumLadders, kNumSVF, kNumHPLadders};
+constexpr uint8_t numForVariant[kNumFamilies] = {kNumLadders, kNumAcid, kNumSVF, kNumHPLadders};
 
 /// A filters family (types which can all share an implementation for toggling) and specific type within that family
 class SpecificFilter {
@@ -102,6 +105,10 @@ public:
 			family = FilterFamily::LP_LADDER;
 			type = LpLadderType::DRIVE;
 			break;
+		case FilterMode::ACID:
+			family = FilterFamily::ACID;
+			type = AcidType::LP2;
+			break;
 		}
 	}
 
@@ -113,6 +120,7 @@ public:
 
 		switch (family) {
 		case FilterFamily::LP_LADDER:
+		case FilterFamily::ACID:
 			return l10n::String::STRING_FOR_DRIVE;
 		case FilterFamily::HP_LADDER:
 			return l10n::String::STRING_FOR_FM;

@@ -191,7 +191,7 @@ inline float softClipTwo(float in) {
 }
 
 /// The LP2 filter type (FILTER_NAIVE_2_POLE): two one-pole lowpass stages with resonance feedback, each clamped to
-/// +-1, which gives it its squelchy, 303-like sound.
+/// +-1, which gives it its squelchy, 303-like sound. The Deluge's acid LPF mode (dsp/filter/acid.h) is this filter.
 namespace lp2 {
 
 /// Stage coefficient for a cutoff of f, as a fraction of the sample rate (ResonantFilter::f)

@@ -74,8 +74,10 @@ file(GLOB_RECURSE deluge_SOURCES
         ../../src/deluge/io/midi/midi_queue.cpp
         # For FFT magnitude tests
         ../../src/deluge/util/fast_pythag.cpp
-        # For drum synth engine tests
+        # For drum synth engine and acid filter tests
         ../../src/deluge/dsp/lxr/*.cpp
+        ../../src/deluge/dsp/filter/acid.cpp
+        ../../src/deluge/dsp/filter/filter.cpp
 )
 
 add_executable(UnitTests

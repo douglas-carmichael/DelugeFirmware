@@ -8,6 +8,7 @@ Each file says which LXR source files it comes from and how it was modified for 
 - `src/deluge/dsp/lxr/patch.h`, `patch.cpp`
 - `src/deluge/dsp/lxr/tables.h`, `tables.cpp` (including the transient samples)
 - `src/deluge/dsp/lxr/voice.h`, `voice.cpp`
+- `src/deluge/dsp/filter/acid.h`, `acid.cpp`
 
 Like the LXR firmware, these files are licensed under the GNU General Public License version 3 only
 (GPL-3.0-only, the licence text is in `LICENSE` at the root of this repository), with the additional terms of
@@ -17,7 +18,7 @@ firmware allows.
 
 How the additional terms are met here:
 
-- **Trademarks.** The Deluge's menus call the engine "Drum synth". Documentation
+- **Trademarks.** The Deluge's menus call the engine "Drum synth" and the filter mode "Acid". Documentation
   states only that the code is ported from the Erica Synths LXR-02 firmware. This project is not made, approved
   or endorsed by, or affiliated with, Erica Synths. ("LXR" also appears in source code identifiers and in the
   names under which sounds using the engine are saved.)

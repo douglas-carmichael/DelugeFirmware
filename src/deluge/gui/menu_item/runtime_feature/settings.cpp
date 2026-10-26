@@ -63,6 +63,7 @@ ShiftIsSticky menuShiftIsSticky{};
 SettingToggle menuLightShiftLed(RuntimeFeatureSettingType::LightShiftLed);
 SettingToggle menuEnableDX7Engine(RuntimeFeatureSettingType::EnableDX7Engine);
 SettingToggle menuEnableLxrEngine(RuntimeFeatureSettingType::EnableLxrEngine);
+SettingToggle menuEnableAcidFilter(RuntimeFeatureSettingType::EnableAcidFilter);
 EmulatedDisplay menuEmulatedDisplay{};
 SettingToggle menuEnableKeyboardViewSidebarMenuExit(RuntimeFeatureSettingType::EnableKeyboardViewSidebarMenuExit);
 SettingToggle menuEnableLaunchEventPlayhead(RuntimeFeatureSettingType::EnableLaunchEventPlayhead);
@@ -91,6 +92,7 @@ std::array<MenuItem*, RuntimeFeatureSettingType::MaxElement - kNonTopLevelSettin
     &menuLightShiftLed,
     &menuEnableDX7Engine,
     &menuEnableLxrEngine,
+    &menuEnableAcidFilter,
     &menuEmulatedDisplay,
     &menuEnableKeyboardViewSidebarMenuExit,
     &menuEnableLaunchEventPlayhead,

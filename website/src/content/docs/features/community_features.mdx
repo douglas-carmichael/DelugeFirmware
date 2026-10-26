@@ -725,6 +725,8 @@ Here is a list of features that have been added to the firmware as a list, group
     - In lowpass ladder filters, the `DRIVE` param smoothly increases filter drive.
     - In the highpass ladder filter `FM` adds filter FM. Try it with the resonance up!
   - `FILTER ROUTE` is accessible via the `SOUND` menu only and adjusts the filter order from `HPF TO LPF`, `LPF TO HPF`, or `PARALLEL`.
+- <Badge text="c1.4" variant="tip" /> Adds an `ACID` mode to `LPF MODE`: the squelchy 303-style 2-pole lowpass of the drum synth engine (see [Drum Synth Engine](#4511---drum-synth-engine)), for any sound. Each of its two stages clips at full scale, so high resonance squelches instead of running away. The `MORPH` param is the filter's input `DRIVE`. The mode is on offer once the community setting `Acid Filter` is on.
+  - Firmware without this mode opens a sound saved with it with its LPF off.
 
 ### 4.2.2 - Stereo Chorus
 
@@ -1384,6 +1386,8 @@ Note: these settings are saved to `SETTINGS/CommunityFeatures.XML` on your SD ca
   - When On, enables access to the DX7 synth engine (see [DX7 Synth Documentation](/features/dx_synth)).
 - `Drum Synth Engine (DRUM)` <Badge text="c1.4" variant="tip" />
   - When On, the drum synth engine can be picked as oscillator 1's type (see [Drum Synth Engine](#4511---drum-synth-engine)). Sounds that already use it play and can be edited either way.
+- `Acid Filter (ACID)` <Badge text="c1.4" variant="tip" />
+  - When On, `ACID` can be picked as `LPF MODE`, and pressing the LPF resonance gold knob, which cycles the LPF modes, includes it (see [Filters](#421---filters)). Sounds that already use it keep it either way.
 - `Emulated Display (EMUL)` <Badge text="c1.0" variant="tip" />
   - This allows you to emulate the 7SEG screen on a deluge with OLED hardware screen.
   - In "Toggle" mode, the :key[Shift + Learn + AffectEntire] combination can used to switch between screen types at

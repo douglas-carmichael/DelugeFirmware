@@ -1,6 +1,8 @@
-// Tests for the drum synth engine (OscType::LXR, dsp/lxr/) and its params (processing/lxr/lxr_sound.h).
+// Tests for the drum synth engine (OscType::LXR, dsp/lxr/), its params (processing/lxr/lxr_sound.h) and the acid
+// filter mode (dsp/filter/acid.h).
 
 #include "CppUTest/TestHarness.h"
+#include "dsp/filter/acid.h"
 #include "dsp/lxr/patch.h"
 #include "dsp/lxr/voice.h"
 #include "processing/lxr/lxr_sound.h"
@@ -269,4 +271,74 @@ TEST(LxrVoiceTest, velocityToLevel) {
 	patch.set(Param::VELO_TO_LEVEL, 0);
 	CHECK(renderHit(patch, kSampleRate / 2, 128, 1, 127).samples
 	      == renderHit(patch, kSampleRate / 2, 128, 1, 32).samples);
+}
+
+TEST_GROUP(AcidFilterTest){};
+
+namespace {
+
+using deluge::dsp::filter::AcidFilter;
+
+std::vector<q31_t> runAcid(std::vector<q31_t> samples, q31_t frequency, q31_t resonance, q31_t morph) {
+	AcidFilter filter{};
+	filter.reset();
+	filter.dryFade = 0; // no fade-in from the reset, to measure the filter alone
+	filter.configure(frequency, resonance, FilterMode::ACID, morph, ONE_Q31);
+	for (size_t i = 0; i < samples.size(); i += 128) {
+		const size_t end = std::min(samples.size(), i + 128);
+		filter.filterMono(samples.data() + i, samples.data() + end);
+	}
+	return samples;
+}
+
+std::vector<q31_t> sine(float frequency, q31_t amplitude, int32_t numSamples) {
+	std::vector<q31_t> samples(numSamples);
+	for (int32_t i = 0; i < numSamples; i++) {
+		samples[i] = static_cast<q31_t>(amplitude * std::sin(2 * 3.14159265 * frequency * i / kSampleRate));
+	}
+	return samples;
+}
+
+double rms(const std::vector<q31_t>& samples, size_t from) {
+	double sum = 0;
+	for (size_t i = from; i < samples.size(); i++) {
+		sum += static_cast<double>(samples[i]) * samples[i];
+	}
+	return std::sqrt(sum / (samples.size() - from));
+}
+
+} // namespace
+
+TEST(AcidFilterTest, quietSignalsKeepTheirLevel) {
+	const std::vector<q31_t> output = runAcid(std::vector<q31_t>(4000, 1 << 20), INT32_MAX, 0, 0);
+	CHECK(std::abs(output.back() - (1 << 20)) < (1 << 20) / 50);
+}
+
+TEST(AcidFilterTest, lowCutoffTakesOutHighFrequencies) {
+	const std::vector<q31_t> input = sine(5000, 1 << 26, 8000);
+	// The filter frequency param reaches the top of its range at 2^26; 2^21 is a cutoff of about 600 Hz
+	const double open = rms(runAcid(input, INT32_MAX, 0, 0), 2000);
+	const double closed = rms(runAcid(input, 1 << 21, 0, 0), 2000);
+	CHECK(open > (1 << 26) * 0.5);
+	CHECK(closed * 20 < open);
+}
+
+TEST(AcidFilterTest, resonanceRings) {
+	std::vector<q31_t> impulse(4000, 0);
+	impulse[0] = 1 << 27;
+	const double plain = rms(runAcid(impulse, 1 << 23, 0, 0), 200);
+	const double resonant = rms(runAcid(impulse, 1 << 23, 1 << 29, 0), 200);
+	CHECK(resonant > plain * 4);
+}
+
+TEST(AcidFilterTest, outputStaysInRange) {
+	// A square far louder than any voice, with all the resonance and drive there is
+	std::vector<q31_t> input(8000);
+	for (size_t i = 0; i < input.size(); i++) {
+		input[i] = (i / 50) % 2 ? (1 << 30) : -(1 << 30);
+	}
+	const std::vector<q31_t> output = runAcid(input, 1 << 23, 1 << 29, 1 << 29);
+	for (q31_t sample : output) {
+		CHECK(std::abs(static_cast<int64_t>(sample)) <= (int64_t{5} << 26) + 1);
+	}
 }

@@ -1108,6 +1108,7 @@ PLACE_SDRAM_DATA Language english{
         {STRING_FOR_LXR_NOTCH, "Notch"},
         {STRING_FOR_LXR_PEAK, "Peak"},
         {STRING_FOR_ACID, "Acid"},
+        {STRING_FOR_COMMUNITY_FEATURE_ACID_FILTER, "Acid Filter"},
         {STRING_FOR_LXR_FM, "FM"},
         {STRING_FOR_LXR_MIX, "Mix"},
         {STRING_FOR_LXR_SNAP, "Snap"},

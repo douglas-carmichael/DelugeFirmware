@@ -72,6 +72,7 @@ enum RuntimeFeatureSettingType : uint32_t {
 	RoundedCorners,
 	ShortcutOverlay,
 	EnableLxrEngine,
+	EnableAcidFilter,
 	MaxElement // Keep as boundary
 };
 

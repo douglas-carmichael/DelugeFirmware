@@ -39,6 +39,7 @@ public:
 	bool usesAffectEntire() override { return true; }
 	void writeCurrentValue() override {
 		auto current_value = this->getValue();
+		const bool wasAcid = info.getSlot() == FilterSlot::LPF && info.getMode() == FilterMode::ACID;
 
 		// If affect-entire button held, do whole kit
 		if (currentUIMode == UI_MODE_HOLDING_AFFECT_ENTIRE_IN_SOUND_EDITOR && soundEditor.editingKitRow()) {
@@ -57,6 +58,11 @@ public:
 		else {
 			info.setMode(current_value);
 		}
+
+		// Leaving the acid mode can take it off offer, which moves the options after it
+		if (wasAcid) {
+			readCurrentValue();
+		}
 	}
 	bool wrapAround() override { return display->have7SEG(); }
 	deluge::vector<std::string_view> getOptions(OptType optType) override {
@@ -70,14 +76,18 @@ public:
 			    l10n::getView(STRING_FOR_OFF),
 			};
 		}
-		return {
+		deluge::vector<std::string_view> options = {
 		    l10n::getView(shortOpt ? STRING_FOR_12DB_LADDER_SHORT : STRING_FOR_12DB_LADDER),
 		    l10n::getView(shortOpt ? STRING_FOR_24DB_LADDER_SHORT : STRING_FOR_24DB_LADDER),
 		    l10n::getView(STRING_FOR_DRIVE),
-		    l10n::getView(shortOpt ? STRING_FOR_SVF_BAND_SHORT : STRING_FOR_SVF_BAND),
-		    l10n::getView(shortOpt ? STRING_FOR_SVF_NOTCH_SHORT : STRING_FOR_SVF_NOTCH),
-		    l10n::getView(STRING_FOR_OFF),
 		};
+		if (FilterInfo::isAcidOffered()) {
+			options.push_back(l10n::getView(STRING_FOR_ACID));
+		}
+		options.push_back(l10n::getView(shortOpt ? STRING_FOR_SVF_BAND_SHORT : STRING_FOR_SVF_BAND));
+		options.push_back(l10n::getView(shortOpt ? STRING_FOR_SVF_NOTCH_SHORT : STRING_FOR_SVF_NOTCH));
+		options.push_back(l10n::getView(STRING_FOR_OFF));
+		return options;
 	}
 
 private:
