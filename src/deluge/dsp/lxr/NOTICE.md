@@ -28,6 +28,28 @@ How the additional terms are met here:
 The additional permission for linking with STMicroelectronics software is unused here: none of that software is
 part of the Deluge firmware.
 
+## Transient samples
+
+The 12 transient samples in `tables.cpp` (`transientData`) are copied from the LXR firmware's `transientTables.c`,
+where they are short 8-bit excerpts (2205 samples each, the last one shorter). The LXR firmware distributes them
+under its notice below, and names their sources only by the labels in this table. Two of the labels identify
+sounds on Freesound, checked on 2026-10-26; the others' sources are not known.
+
+| Menu name | Label in the LXR firmware | Source |
+|---|---|---|
+| Click | `js_expClick` | not identified |
+| Click 2 | `js_click2` | not identified |
+| Tick | `4102__patchen__atik-2-10-stereoatik` | "ATIK 2 - 10 stereoatik.wav" by patchen, <https://freesound.org/s/4102/>, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); used here as a shortened 8-bit excerpt |
+| Kick | `82279__kevoy__acoustic-kick_eq_8_bit_signed_pcm` | "acoustic kick.wav" by KEVOY, <https://freesound.org/s/82279/>, [CC0](https://creativecommons.org/publicdomain/zero/1.0/) |
+| Rim | `altemark_rs03 rimshot` | not identified |
+| Drop | `neotone_drip2` | not identified |
+| Hat | `pj cohen pedal chic` | not identified |
+| Clap | `Shiftr 808 clap` | not identified |
+| Kick 2 | `Mattel kick` | not identified |
+| Snare | `md 16 17` | not identified |
+| Tom | `md 16 36` | not identified |
+| Snap 2 | `md 16 81` | not identified |
+
 ---
 
 The LXR firmware's `NOTICE.md`, unchanged:
