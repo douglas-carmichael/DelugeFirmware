@@ -27,6 +27,9 @@ class ParamManagerForTimeline;
 class WaveTable;
 class SampleHolder;
 class DxPatch;
+namespace deluge::dsp::lxr {
+struct Patch;
+}
 
 class Source {
 public:
@@ -46,6 +49,8 @@ public:
 
 	DxPatch* dxPatch;
 	bool dxPatchChanged = false;
+	/// The OscType::LXR settings that aren't Deluge params. Allocated when first needed.
+	deluge::dsp::lxr::Patch* lxrPatch = nullptr;
 	SampleRepeatMode repeatMode;
 
 	int8_t timeStretchAmount;
@@ -69,6 +74,8 @@ public:
 	void setOscType(OscType newType);
 
 	DxPatch* ensureDxPatch();
+	/// May return nullptr if out of memory
+	deluge::dsp::lxr::Patch* ensureLxrPatch();
 
 private:
 	void destructAllMultiRanges();

@@ -93,7 +93,8 @@ public:
 			return source.hasAtLeastOneAudioFileLoaded();
 		}
 
-		return source.oscType != OscType::SAMPLE || sound->getSynthMode() == SynthMode::FM;
+		return (source.oscType != OscType::SAMPLE && source.oscType != OscType::LXR)
+		       || sound->getSynthMode() == SynthMode::FM;
 	}
 
 	int32_t getNumberEditSize() override {

@@ -321,6 +321,34 @@ char const* getParamDisplayName(Kind kind, int32_t p) {
 		using enum UnpatchedSound;
 		static l10n::String const NAMES[UNPATCHED_SOUND_MAX_NUM - unc] = {
 		    [UNPATCHED_PORTAMENTO - unc] = STRING_FOR_PORTAMENTO,
+		    [UNPATCHED_LXR_COARSE - unc] = STRING_FOR_LXR_COARSE_TITLE,
+		    [UNPATCHED_LXR_FINE - unc] = STRING_FOR_LXR_FINE_TITLE,
+		    [UNPATCHED_LXR_PULSE_WIDTH - unc] = STRING_FOR_LXR_PULSE_WIDTH_TITLE,
+		    [UNPATCHED_LXR_NOISE_FREQ - unc] = STRING_FOR_LXR_NOISE_FREQ_TITLE,
+		    [UNPATCHED_LXR_MIX - unc] = STRING_FOR_LXR_NOISE_MIX_TITLE,
+		    [UNPATCHED_LXR_MOD1_FREQ - unc] = STRING_FOR_LXR_MOD1_FREQ_TITLE,
+		    [UNPATCHED_LXR_MOD1_GAIN - unc] = STRING_FOR_LXR_MOD1_LEVEL_TITLE,
+		    [UNPATCHED_LXR_MOD2_FREQ - unc] = STRING_FOR_LXR_MOD2_FREQ_TITLE,
+		    [UNPATCHED_LXR_MOD2_GAIN - unc] = STRING_FOR_LXR_MOD2_LEVEL_TITLE,
+		    [UNPATCHED_LXR_PITCH_DECAY - unc] = STRING_FOR_LXR_PITCH_DECAY_TITLE,
+		    [UNPATCHED_LXR_PITCH_AMOUNT - unc] = STRING_FOR_LXR_PITCH_AMOUNT_TITLE,
+		    [UNPATCHED_LXR_PITCH_SLOPE - unc] = STRING_FOR_LXR_PITCH_SLOPE_TITLE,
+		    [UNPATCHED_LXR_ATTACK - unc] = STRING_FOR_LXR_ATTACK_TITLE,
+		    [UNPATCHED_LXR_DECAY - unc] = STRING_FOR_LXR_DECAY_TITLE,
+		    [UNPATCHED_LXR_SLOPE - unc] = STRING_FOR_LXR_AMP_SLOPE_TITLE,
+		    [UNPATCHED_LXR_REPEAT - unc] = STRING_FOR_LXR_REPEAT_TITLE,
+		    [UNPATCHED_LXR_TRANSIENT_LEVEL - unc] = STRING_FOR_LXR_TRANSIENT_LEVEL_TITLE,
+		    [UNPATCHED_LXR_TRANSIENT_PITCH - unc] = STRING_FOR_LXR_TRANSIENT_PITCH_TITLE,
+		    [UNPATCHED_LXR_FILTER_FREQ - unc] = STRING_FOR_LXR_FILTER_FREQ_TITLE,
+		    [UNPATCHED_LXR_FILTER_RESO - unc] = STRING_FOR_LXR_FILTER_RESO_TITLE,
+		    [UNPATCHED_LXR_FILTER_DRIVE - unc] = STRING_FOR_LXR_FILTER_DRIVE_TITLE,
+		    [UNPATCHED_LXR_DRIVE - unc] = STRING_FOR_LXR_DRIVE_TITLE,
+		    [UNPATCHED_LXR_SAMPLE_RATE - unc] = STRING_FOR_LXR_SAMPLE_RATE_TITLE,
+		    [UNPATCHED_LXR_LEVEL - unc] = STRING_FOR_LXR_LEVEL_TITLE,
+		    [UNPATCHED_LXR_VELO_AMOUNT - unc] = STRING_FOR_LXR_VELO_AMOUNT_TITLE,
+		    [UNPATCHED_LXR_LFO_RATE - unc] = STRING_FOR_LXR_LFO_RATE_TITLE,
+		    [UNPATCHED_LXR_LFO_DEPTH - unc] = STRING_FOR_LXR_LFO_DEPTH_TITLE,
+		    [UNPATCHED_LXR_LFO_PHASE - unc] = STRING_FOR_LXR_LFO_PHASE_TITLE,
 		};
 		return l10n::get(NAMES[p - unc]);
 	}
@@ -422,6 +450,90 @@ constexpr char const* paramNameForFileConst(Kind const kind, ParamType const par
 		switch (static_cast<UnpatchedSound>(param - UNPATCHED_START)) {
 		case UNPATCHED_PORTAMENTO:
 			return "portamento";
+
+		case UNPATCHED_LXR_COARSE:
+			return "lxrCoarse";
+
+		case UNPATCHED_LXR_FINE:
+			return "lxrFine";
+
+		case UNPATCHED_LXR_PULSE_WIDTH:
+			return "lxrPulseWidth";
+
+		case UNPATCHED_LXR_NOISE_FREQ:
+			return "lxrNoiseFreq";
+
+		case UNPATCHED_LXR_MIX:
+			return "lxrNoiseMix";
+
+		case UNPATCHED_LXR_MOD1_FREQ:
+			return "lxrMod1Freq";
+
+		case UNPATCHED_LXR_MOD1_GAIN:
+			return "lxrMod1Level";
+
+		case UNPATCHED_LXR_MOD2_FREQ:
+			return "lxrMod2Freq";
+
+		case UNPATCHED_LXR_MOD2_GAIN:
+			return "lxrMod2Level";
+
+		case UNPATCHED_LXR_PITCH_DECAY:
+			return "lxrPitchDecay";
+
+		case UNPATCHED_LXR_PITCH_AMOUNT:
+			return "lxrPitchAmount";
+
+		case UNPATCHED_LXR_PITCH_SLOPE:
+			return "lxrPitchSlope";
+
+		case UNPATCHED_LXR_ATTACK:
+			return "lxrAttack";
+
+		case UNPATCHED_LXR_DECAY:
+			return "lxrDecay";
+
+		case UNPATCHED_LXR_SLOPE:
+			return "lxrSlope";
+
+		case UNPATCHED_LXR_REPEAT:
+			return "lxrRepeat";
+
+		case UNPATCHED_LXR_TRANSIENT_LEVEL:
+			return "lxrTransientLevel";
+
+		case UNPATCHED_LXR_TRANSIENT_PITCH:
+			return "lxrTransientPitch";
+
+		case UNPATCHED_LXR_FILTER_FREQ:
+			return "lxrFilterFreq";
+
+		case UNPATCHED_LXR_FILTER_RESO:
+			return "lxrFilterResonance";
+
+		case UNPATCHED_LXR_FILTER_DRIVE:
+			return "lxrFilterDrive";
+
+		case UNPATCHED_LXR_DRIVE:
+			return "lxrDrive";
+
+		case UNPATCHED_LXR_SAMPLE_RATE:
+			return "lxrSampleRate";
+
+		case UNPATCHED_LXR_LEVEL:
+			return "lxrLevel";
+
+		case UNPATCHED_LXR_VELO_AMOUNT:
+			return "lxrVelocityAmount";
+
+		case UNPATCHED_LXR_LFO_RATE:
+			return "lxrLfoRate";
+
+		case UNPATCHED_LXR_LFO_DEPTH:
+			return "lxrLfoDepth";
+
+		case UNPATCHED_LXR_LFO_PHASE:
+			return "lxrLfoPhase";
 
 		default:
 		    // Fall through to the other param kind handling

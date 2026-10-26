@@ -89,6 +89,10 @@
 #include "gui/menu_item/keyboard/layout.h"
 #include "gui/menu_item/lfo/sync.h"
 #include "gui/menu_item/lfo/type.h"
+#include "gui/menu_item/lxr/automated_param.h"
+#include "gui/menu_item/lxr/group.h"
+#include "gui/menu_item/lxr/setting.h"
+#include "gui/menu_item/lxr/voice_type.h"
 #include "gui/menu_item/master_transpose.h"
 #include "gui/menu_item/menu_item.h"
 #include "gui/menu_item/midi/after_touch_to_mono.h"
@@ -1481,6 +1485,105 @@ PLACE_SDRAM_DATA std::array<MenuItem*, 3> dxMenuItems = {
 };
 PLACE_SDRAM_BSS menu_item::Submenu dxMenu{STRING_FOR_DX_1, dxMenuItems};
 
+// Drum synth (oscillator 1 of type OscType::LXR). Each group and item shows only for a voice circuit that has it.
+using LxrParam = deluge::dsp::lxr::Param;
+
+PLACE_SDRAM_BSS lxr::VoiceTypeSelection lxrVoiceTypeMenu{STRING_FOR_LXR_VOICE_TYPE};
+
+PLACE_SDRAM_BSS lxr::Setting lxrOscWaveMenu{STRING_FOR_WAVEFORM, LxrParam::OSC_WAVE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrCoarseMenu{STRING_FOR_LXR_COARSE, params::UNPATCHED_LXR_COARSE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrFineMenu{STRING_FOR_LXR_FINE, params::UNPATCHED_LXR_FINE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrPulseWidthMenu{STRING_FOR_PULSE_WIDTH, params::UNPATCHED_LXR_PULSE_WIDTH};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrNoiseFreqMenu{STRING_FOR_LXR_NOISE_FREQ, params::UNPATCHED_LXR_NOISE_FREQ};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrNoiseMixMenu{STRING_FOR_LXR_NOISE_MIX, params::UNPATCHED_LXR_MIX};
+PLACE_SDRAM_BSS lxr::Group lxrOscMenu{
+    STRING_FOR_LXR_OSCILLATOR,
+    {&lxrOscWaveMenu, &lxrCoarseMenu, &lxrFineMenu, &lxrPulseWidthMenu, &lxrNoiseFreqMenu, &lxrNoiseMixMenu},
+};
+
+PLACE_SDRAM_BSS lxr::Setting lxrModModeMenu{STRING_FOR_MODE, LxrParam::FM_MODE};
+PLACE_SDRAM_BSS lxr::Setting lxrMod1WaveMenu{STRING_FOR_LXR_MOD1_WAVE, LxrParam::MOD1_WAVE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrMod1FreqMenu{STRING_FOR_LXR_MOD1_FREQ, params::UNPATCHED_LXR_MOD1_FREQ};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrMod1LevelMenu{STRING_FOR_LXR_MOD1_LEVEL, params::UNPATCHED_LXR_MOD1_GAIN};
+PLACE_SDRAM_BSS lxr::Setting lxrMod2WaveMenu{STRING_FOR_LXR_MOD2_WAVE, LxrParam::MOD2_WAVE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrMod2FreqMenu{STRING_FOR_LXR_MOD2_FREQ, params::UNPATCHED_LXR_MOD2_FREQ};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrMod2LevelMenu{STRING_FOR_LXR_MOD2_LEVEL, params::UNPATCHED_LXR_MOD2_GAIN};
+PLACE_SDRAM_BSS lxr::Group lxrModMenu{
+    STRING_FOR_LXR_MODULATORS,
+    {&lxrModModeMenu, &lxrMod1WaveMenu, &lxrMod1FreqMenu, &lxrMod1LevelMenu, &lxrMod2WaveMenu, &lxrMod2FreqMenu,
+     &lxrMod2LevelMenu},
+};
+
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrPitchDecayMenu{STRING_FOR_DECAY, params::UNPATCHED_LXR_PITCH_DECAY};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrPitchAmountMenu{STRING_FOR_AMOUNT, params::UNPATCHED_LXR_PITCH_AMOUNT};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrPitchSlopeMenu{STRING_FOR_LXR_SLOPE, params::UNPATCHED_LXR_PITCH_SLOPE};
+PLACE_SDRAM_BSS lxr::Group lxrPitchEnvMenu{
+    STRING_FOR_LXR_PITCH_ENVELOPE,
+    {&lxrPitchDecayMenu, &lxrPitchAmountMenu, &lxrPitchSlopeMenu},
+};
+
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrAttackMenu{STRING_FOR_ATTACK, params::UNPATCHED_LXR_ATTACK};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrDecayMenu{STRING_FOR_DECAY, params::UNPATCHED_LXR_DECAY};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrAmpSlopeMenu{STRING_FOR_LXR_SLOPE, params::UNPATCHED_LXR_SLOPE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrRepeatMenu{STRING_FOR_LXR_REPEAT, params::UNPATCHED_LXR_REPEAT};
+PLACE_SDRAM_BSS lxr::Group lxrAmpEnvMenu{
+    STRING_FOR_LXR_AMP_ENVELOPE,
+    {&lxrAttackMenu, &lxrDecayMenu, &lxrAmpSlopeMenu, &lxrRepeatMenu},
+};
+
+PLACE_SDRAM_BSS lxr::Setting lxrTransientWaveMenu{STRING_FOR_WAVEFORM, LxrParam::TRANSIENT_WAVE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrTransientLevelMenu{STRING_FOR_AMOUNT_LEVEL,
+                                                          params::UNPATCHED_LXR_TRANSIENT_LEVEL};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrTransientPitchMenu{STRING_FOR_PITCH, params::UNPATCHED_LXR_TRANSIENT_PITCH};
+PLACE_SDRAM_BSS lxr::Group lxrTransientMenu{
+    STRING_FOR_LXR_TRANSIENT,
+    {&lxrTransientWaveMenu, &lxrTransientLevelMenu, &lxrTransientPitchMenu},
+};
+
+PLACE_SDRAM_BSS lxr::Setting lxrFilterTypeMenu{STRING_FOR_TYPE, LxrParam::FILTER_TYPE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrFilterFreqMenu{STRING_FOR_FREQUENCY, params::UNPATCHED_LXR_FILTER_FREQ};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrFilterResoMenu{STRING_FOR_RESONANCE, params::UNPATCHED_LXR_FILTER_RESO};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrFilterDriveMenu{STRING_FOR_DRIVE, params::UNPATCHED_LXR_FILTER_DRIVE};
+PLACE_SDRAM_BSS lxr::Group lxrFilterMenu{
+    STRING_FOR_LXR_FILTER,
+    {&lxrFilterTypeMenu, &lxrFilterFreqMenu, &lxrFilterResoMenu, &lxrFilterDriveMenu},
+};
+
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrDriveMenu{STRING_FOR_DRIVE, params::UNPATCHED_LXR_DRIVE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrSampleRateMenu{STRING_FOR_LXR_SAMPLE_RATE, params::UNPATCHED_LXR_SAMPLE_RATE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrLevelMenu{STRING_FOR_AMOUNT_LEVEL, params::UNPATCHED_LXR_LEVEL};
+PLACE_SDRAM_BSS lxr::Group lxrOutputMenu{
+    STRING_FOR_LXR_OUTPUT,
+    {&lxrDriveMenu, &lxrSampleRateMenu, &lxrLevelMenu},
+};
+
+PLACE_SDRAM_BSS lxr::Setting lxrVeloToLevelMenu{STRING_FOR_LXR_TO_LEVEL, LxrParam::VELO_TO_LEVEL};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrVeloAmountMenu{STRING_FOR_AMOUNT, params::UNPATCHED_LXR_VELO_AMOUNT};
+PLACE_SDRAM_BSS lxr::Setting lxrVeloDestMenu{STRING_FOR_DESTINATION, LxrParam::VELO_DEST};
+PLACE_SDRAM_BSS lxr::Group lxrVelocityMenu{
+    STRING_FOR_VELOCITY,
+    {&lxrVeloToLevelMenu, &lxrVeloAmountMenu, &lxrVeloDestMenu},
+};
+
+PLACE_SDRAM_BSS lxr::Setting lxrLfoWaveMenu{STRING_FOR_WAVEFORM, LxrParam::LFO_WAVE};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrLfoRateMenu{STRING_FOR_RATE, params::UNPATCHED_LXR_LFO_RATE};
+PLACE_SDRAM_BSS lxr::Setting lxrLfoSyncMenu{STRING_FOR_SYNC, LxrParam::LFO_SYNC};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrLfoDepthMenu{STRING_FOR_DEPTH, params::UNPATCHED_LXR_LFO_DEPTH};
+PLACE_SDRAM_BSS lxr::Setting lxrLfoRetriggerMenu{STRING_FOR_LXR_RETRIGGER, LxrParam::LFO_RETRIGGER};
+PLACE_SDRAM_BSS lxr::AutomatedParam lxrLfoPhaseMenu{STRING_FOR_LXR_PHASE, params::UNPATCHED_LXR_LFO_PHASE};
+PLACE_SDRAM_BSS lxr::Setting lxrLfoDestMenu{STRING_FOR_DESTINATION, LxrParam::LFO_DEST};
+PLACE_SDRAM_BSS lxr::Group lxrLfoMenu{
+    STRING_FOR_LXR_LFO,
+    {&lxrLfoWaveMenu, &lxrLfoRateMenu, &lxrLfoSyncMenu, &lxrLfoDepthMenu, &lxrLfoRetriggerMenu, &lxrLfoPhaseMenu,
+     &lxrLfoDestMenu},
+};
+
+PLACE_SDRAM_BSS lxr::Group lxrMenu{
+    STRING_FOR_LXR_ENGINE,
+    {&lxrVoiceTypeMenu, &lxrOscMenu, &lxrModMenu, &lxrPitchEnvMenu, &lxrAmpEnvMenu, &lxrTransientMenu, &lxrFilterMenu,
+     &lxrOutputMenu, &lxrVelocityMenu, &lxrLfoMenu},
+};
+
 // Not FM
 PLACE_SDRAM_BSS MasterTranspose masterTransposeMenu{STRING_FOR_MASTER_TRANSPOSE, STRING_FOR_MASTER_TRAN_MENU_TITLE};
 
@@ -1539,6 +1642,7 @@ PLACE_SDRAM_BSS Submenu soundEditorRootMenu{
         &soundFXMenu,
         &sidechainMenu,
         &source0Menu,
+        &lxrMenu,
         &source1Menu,
         &modulator0Menu,
         &modulator1Menu,
@@ -1572,6 +1676,7 @@ PLACE_SDRAM_BSS Submenu soundEditorRootMenuDrum{
         &soundFXMenu,
         &sidechainMenu,
         &source0Menu,
+        &lxrMenu,
         &source1Menu,
         &modulator0Menu,
         &modulator1Menu,

@@ -18,6 +18,7 @@
 #include "processing/sound/sound.h"
 #include "definitions_cxx.hpp"
 #include "dsp/dx/engine.h"
+#include "dsp/lxr/patch.h"
 #include "gui/l10n/l10n.h"
 #include "gui/ui/root_ui.h"
 #include "gui/ui/sound_editor.h"
@@ -50,6 +51,7 @@
 #include "modulation/patch/patcher.h"
 #include "playback/playback_handler.h"
 #include "processing/engines/audio_engine.h"
+#include "processing/lxr/lxr_sound.h"
 #include "processing/sound/sound_instrument.h"
 #include "storage/audio/audio_file_manager.h"
 #include "storage/flash_storage.h"
@@ -136,6 +138,7 @@ void Sound::initParams(ParamManager* paramManager) {
 	unpatchedParams->kind = params::Kind::UNPATCHED_SOUND;
 
 	unpatchedParams->params[params::UNPATCHED_PORTAMENTO].setCurrentValueBasicForSetup(-2147483648);
+	deluge::processing::lxr::initParams(*unpatchedParams);
 
 	PatchedParamSet* patchedParams = paramManager->getPatchedParamSet();
 	patchedParams->params[params::LOCAL_VOLUME].setCurrentValueBasicForSetup(0);
@@ -1621,13 +1624,15 @@ void Sound::noteOnPostArpeggiator(ModelStackWithSoundFlags* modelStack, int32_t 
 				break;
 			}
 
-			// If FM, or no active sources are samples, or still sounding after fast-release, unassign
+			// If FM, or no active sources are samples, or still sounding after fast-release, unassign. A drum synth
+			// hit counts as a sample here, so the new hit doesn't cut the old one off with a click.
 			bool needs_unassign = //<
 			    synthMode == SynthMode::FM
 			    || std::ranges::any_of(std::views::iota(0, kNumSources),
 			                           [&](int32_t s) {
 				                           return isSourceActiveCurrently(s, paramManager)
-				                                  && sources[s].oscType != OscType::SAMPLE;
+				                                  && sources[s].oscType != OscType::SAMPLE
+				                                  && sources[s].oscType != OscType::LXR;
 			                           })
 			    || (voice->envelopes[0].state != EnvelopeStage::FAST_RELEASE
 			        && !voice->doFastRelease(SOFT_CULL_INCREMENT));
@@ -1952,6 +1957,14 @@ bool Sound::allowNoteTails(ModelStackWithSoundFlags* modelStack, bool disregardS
 		bool sourceEverActive = modelStack->checkSourceEverActiveDisregardingMissingSample(s);
 
 		anyActiveSources = sourceEverActive || anyActiveSources;
+
+		// A drum synth voice ends by itself, like a one-shot sample, unless it can sound for ever
+		if (sourceEverActive && sources[s].oscType == OscType::LXR) {
+			if (sources[s].lxrPatch != nullptr && sources[s].lxrPatch->sustainsForever()) {
+				return true;
+			}
+			continue;
+		}
 
 		if (sourceEverActive
 		    && (sources[s].oscType != OscType::SAMPLE || sources[s].repeatMode != SampleRepeatMode::ONCE
@@ -3405,6 +3418,15 @@ Error Sound::readSourceFromFile(Deserializer& reader, int32_t s, ParamManagerFor
 			patch->setEngineMode(reader.readTagOrAttributeValueInt());
 			reader.exitTag("dx7enginemode");
 		}
+		else if (!strcmp(tagName, "lxrPatch")) {
+			uint8_t data[deluge::dsp::lxr::Patch::kSerializedSize];
+			const int32_t length = reader.readTagOrAttributeValueHexBytes(data, sizeof(data));
+			deluge::dsp::lxr::Patch* patch = source->ensureLxrPatch();
+			if (patch != nullptr) {
+				patch->deserialize(data, length);
+			}
+			reader.exitTag("lxrPatch");
+		}
 		/*
 		else if (!strcmp(tagName, "sampleSync")) {
 		    source->sampleSync = stringToBool(reader.readTagContents());
@@ -3753,6 +3775,14 @@ void Sound::writeSourceToFile(Serializer& writer, int32_t s, char const* tagName
 			}
 			goto justCloseTag;
 		}
+		else if (source->oscType == OscType::LXR && synthMode != SynthMode::FM) {
+			if (source->lxrPatch != nullptr) {
+				uint8_t data[deluge::dsp::lxr::Patch::kSerializedSize];
+				source->lxrPatch->serialize(data);
+				writer.writeAttributeHexBytes("lxrPatch", data, sizeof(data));
+			}
+			goto justCloseTag;
+		}
 		else {
 justCloseTag:
 			writer.closeTag();
@@ -4039,6 +4069,7 @@ bool Sound::readParamTagFromFile(Deserializer& reader, char const* tagName, Para
 		paramManager->getPatchCableSet()->readPatchCablesFromFile(reader, readAutomationUpToPos);
 		reader.exitTag("patchCables");
 	}
+	else if (deluge::processing::lxr::readParam(reader, tagName, unpatchedParamsSummary, readAutomationUpToPos)) {}
 	else if (ModControllableAudio::readParamTagFromFile(reader, tagName, paramManager, readAutomationUpToPos)) {}
 
 	else {
@@ -4119,6 +4150,8 @@ void Sound::writeParamsToFile(Serializer& writer, ParamManager* paramManager, bo
 	patchedParams->writeParamAsAttribute(writer, "hpfMorph", params::LOCAL_HPF_MORPH, writeAutomation);
 
 	patchedParams->writeParamAsAttribute(writer, "waveFold", params::LOCAL_FOLD, writeAutomation);
+
+	deluge::processing::lxr::writeParams(writer, *unpatchedParams, writeAutomation);
 
 	writer.writeOpeningTagEnd();
 

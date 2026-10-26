@@ -1212,6 +1212,16 @@ For a detailed description of this feature, please refer to the feature document
   In case of drums, it is like having a Sound row + a Midi row together triggering at the same time. And in case of synths, it is like
   having a Synth clip + a Midi clip together triggering at the same time. This feature is limited to regular MIDI (that is, not for MPE).
 
+### 4.5.11 - Drum Synth Engine
+
+- <Badge text="c1.4" variant="tip" /> A new oscillator type, `DRUM SYNTH`, plays the drum voices of the LXR-02 drum machine, ported from the Erica Synths LXR-02 firmware (this project is not affiliated with or endorsed by Erica Synths). It is meant for kit rows, and works in synths too. Like the DX7 engine, it runs inside the subtractive engine, so the Deluge's filters, envelopes, effects and mod matrix all apply on top.
+  - Turn on the community setting `Drum Synth Engine`, then set `OSCILLATOR 1` > `TYPE` to `DRUM SYNTH`. Press :key[select] on the type, or open `SOUND` > `DRUM SYNTH`, to edit it.
+  - `VOICE TYPE` picks one of seven sounds: `DRUM 1` to `DRUM 3` (kicks and toms), `SNARE` (also claps), `CYMBAL`, `CLOSED HAT` and `OPEN HAT`. This picks the voice circuit and loads all of that sound's settings, replacing the ones you had (the continuous settings only in the clip you are editing, as with any param).
+  - The settings are grouped as on the LXR-02: `OSCILLATOR`, `MODULATORS`, `PITCH ENVELOPE`, `AMP ENVELOPE`, `TRANSIENT`, `FILTER`, `OUTPUT`, `VELOCITY` and `LFO`. Only the settings the voice circuit has are shown. Values are the LXR-02's own, 0 to 127 (`COARSE` and the modulator frequencies as semitones from middle C, `FINE` around 0).
+  - Every continuous setting is a regular param: automate it, lock it to steps in the `AUTOMATION VIEW`, or learn it to a gold knob or MIDI CC, where each knob detent or CC value is one step of the setting. Settings that pick from a list (waveforms, filter type, LFO sync, modulation targets) are the same in every clip, like the oscillator type.
+  - A drum synth hit plays until its own envelope has died away, like a one-shot sample: note length doesn't matter. Only a voice that never decays (`DECAY` at 127, or a snare or cymbal that repeats its attack phase for ever) ends with the note, through the Deluge's envelope. The note's pitch, transpose and the `PITCH` params tune the voice; middle C, a kit row's own note, plays it at its own tuning.
+  - Firmware without the engine opens such a sound with a triangle oscillator.
+
 ## 4.6 - Instrument Clip View - Kit Clip Features
 
 ### 4.6.1 - Keyboard View
@@ -1372,6 +1382,8 @@ Note: these settings are saved to `SETTINGS/CommunityFeatures.XML` on your SD ca
     shift.
 - `Enable DX7 Engine (DX7)` <Badge text="c1.2" variant="tip" />
   - When On, enables access to the DX7 synth engine (see [DX7 Synth Documentation](/features/dx_synth)).
+- `Drum Synth Engine (DRUM)` <Badge text="c1.4" variant="tip" />
+  - When On, the drum synth engine can be picked as oscillator 1's type (see [Drum Synth Engine](#4511---drum-synth-engine)). Sounds that already use it play and can be edited either way.
 - `Emulated Display (EMUL)` <Badge text="c1.0" variant="tip" />
   - This allows you to emulate the 7SEG screen on a deluge with OLED hardware screen.
   - In "Toggle" mode, the :key[Shift + Learn + AffectEntire] combination can used to switch between screen types at
@@ -1431,9 +1443,11 @@ different firmware
 
   Enable additional debug output for matrix driver when pads are pressed
 
-- FEATURE\_...
+- FEATURE_LXR_ENGINE
 
-  Description of said feature, first new feature please replace this
+  On by default. Off leaves out the DSP of the drum synth engine and its tables, about 100 kB of the firmware
+  image (`./dbt configure -DFEATURE_LXR_ENGINE=OFF`). Sounds that use the engine then still load and save, but
+  play silently.
 
 [MIDI Follow Mode Loopy Pro Template]: https://github.com/SynthstromAudible/DelugeFirmware/tree/main/contrib/midi_follow/loopy_pro
 [MIDI Follow Mode Touch OSC Template]: https://github.com/SynthstromAudible/DelugeFirmware/tree/main/contrib/midi_follow/touch_osc

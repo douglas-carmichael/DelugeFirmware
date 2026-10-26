@@ -26,6 +26,7 @@
 #include "playback/playback_handler.h"
 #include "processing/engines/audio_engine.h"
 #include "processing/live/live_pitch_shifter.h"
+#include "processing/lxr/lxr_sound.h"
 #include "processing/source.h"
 #include "storage/multi_range/multisample_range.h"
 
@@ -84,6 +85,14 @@ bool VoiceUnisonPartSource::noteOn(Voice* voice, Source* source, VoiceSamplePlay
 
 		dxVoice->init(*patch, voice->noteCodeAfterArpeggiation, velocity);
 	}
+	else if (synthMode != SynthMode::FM && source->oscType == OscType::LXR) [[unlikely]] {
+		if (lxrVoice == nullptr) {
+			lxrVoice = deluge::processing::lxr::acquireVoice();
+			if (lxrVoice == nullptr) {
+				return false;
+			}
+		}
+	}
 	else {
 		if (oscRetriggerPhase != 0xFFFFFFFF) {
 			oscPos = getOscInitialPhaseForZero(source->oscType) + oscRetriggerPhase;
@@ -111,6 +120,11 @@ void VoiceUnisonPartSource::unassign(bool deletingSong) {
 	if (dxVoice != nullptr) {
 		dxEngine->dxVoiceUnassigned(dxVoice);
 		dxVoice = nullptr;
+	}
+
+	if (lxrVoice != nullptr) {
+		deluge::processing::lxr::releaseVoice(lxrVoice);
+		lxrVoice = nullptr;
 	}
 
 	if (livePitchShifter != nullptr) {

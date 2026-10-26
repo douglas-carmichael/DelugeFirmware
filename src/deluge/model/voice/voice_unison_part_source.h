@@ -29,6 +29,9 @@ class Voice;
 class VoiceSample;
 class LivePitchShifter;
 class DxVoice;
+namespace deluge::dsp::lxr {
+class Voice;
+}
 
 class VoiceUnisonPartSource {
 public:
@@ -50,4 +53,6 @@ public:
 	VoiceSample* voiceSample = nullptr;
 	LivePitchShifter* livePitchShifter = nullptr;
 	gsl::owner<DxVoice*> dxVoice = nullptr;
+	/// OscType::LXR: allocated here, set up and triggered by Voice::noteOn()
+	gsl::owner<deluge::dsp::lxr::Voice*> lxrVoice = nullptr;
 };

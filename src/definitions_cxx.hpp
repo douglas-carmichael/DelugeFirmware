@@ -366,6 +366,7 @@ enum class OscType : uint8_t {
 	WAVETABLE,
 	SAMPLE,
 	DX7,
+	LXR, ///< drum synth engine ported from the Erica Synths LXR-02 firmware, see dsp/lxr/
 	INPUT_L,
 	INPUT_R,
 	INPUT_STEREO,

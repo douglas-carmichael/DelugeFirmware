@@ -22,6 +22,7 @@
 #include "gui/colour/palette.h"
 #include "gui/menu_item/colour.h"
 #include "gui/menu_item/file_selector.h"
+#include "gui/menu_item/lxr/common.h"
 #include "gui/menu_item/multi_range.h"
 #include "gui/ui/audio_recorder.h"
 #include "gui/ui/browser/sample_browser.h"
@@ -84,6 +85,7 @@
 #include "playback/playback_handler.h"
 #include "processing/engines/audio_engine.h"
 #include "processing/engines/cv_engine.h"
+#include "processing/lxr/lxr_sound.h"
 #include "processing/sound/sound_drum.h"
 #include "processing/sound/sound_instrument.h"
 #include "storage/audio/audio_file_holder.h"
@@ -123,7 +125,7 @@ const uint32_t mutePadActionUIModes[] = {UI_MODE_NOTES_PRESSED, UI_MODE_AUDITION
 
 const uint32_t verticalScrollUIModes[] = {UI_MODE_NOTES_PRESSED, UI_MODE_AUDITIONING, UI_MODE_RECORD_COUNT_IN, 0};
 
-constexpr int32_t kNumNonGlobalParamsForAutomation = 83;
+constexpr int32_t kNumNonGlobalParamsForAutomation = 111;
 constexpr int32_t kNumGlobalParamsForAutomation = 39;
 
 // synth and kit rows FX - sorted in the order that Parameters are scrolled through on the display
@@ -163,6 +165,35 @@ const std::array<std::pair<params::Kind, ParamType>, kNumNonGlobalParamsForAutom
     {params::Kind::PATCHED, params::LOCAL_OSC_A_PHASE_WIDTH},
     {params::Kind::PATCHED, params::LOCAL_CARRIER_0_FEEDBACK},
     {params::Kind::PATCHED, params::LOCAL_OSC_A_WAVE_INDEX},
+    // OSC 1 drum synth settings, only listed for a sound whose voice circuit has them
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_COARSE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_FINE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_PULSE_WIDTH},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_NOISE_FREQ},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_MIX},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_MOD1_FREQ},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_MOD1_GAIN},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_MOD2_FREQ},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_MOD2_GAIN},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_PITCH_DECAY},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_PITCH_AMOUNT},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_PITCH_SLOPE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_ATTACK},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_DECAY},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_SLOPE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_REPEAT},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_TRANSIENT_LEVEL},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_TRANSIENT_PITCH},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_FILTER_FREQ},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_FILTER_RESO},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_FILTER_DRIVE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_DRIVE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_SAMPLE_RATE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_LEVEL},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_VELO_AMOUNT},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_LFO_RATE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_LFO_DEPTH},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_LXR_LFO_PHASE},
     // OSC 2 Volume, Pitch, Pulse Width, Carrier Feedback, Wave Index
     {params::Kind::PATCHED, params::LOCAL_OSC_B_VOLUME},
     {params::Kind::PATCHED, params::LOCAL_OSC_B_PITCH_ADJUST},
@@ -2751,6 +2782,30 @@ void AutomationView::selectGlobalParam(int32_t offset, Clip* clip) {
 	automationParamType = AutomationParamType::PER_SOUND;
 }
 
+// whether the synth or kit row of a clip has a param of the non-global list
+bool AutomationView::isNonGlobalParamAvailable(Clip* clip, params::Kind kind, int32_t id) {
+	if (kind != params::Kind::UNPATCHED_SOUND) {
+		return true;
+	}
+	if (id == params::UNPATCHED_PORTAMENTO) {
+		return clip->output->type != OutputType::KIT;
+	}
+	if (!params::isLxrUnpatchedParam(id)) {
+		return true;
+	}
+	ModControllableAudio* sound = nullptr;
+	if (clip->output->type == OutputType::SYNTH) {
+		sound = static_cast<SoundInstrument*>(clip->output);
+	}
+	else if (clip->output->type == OutputType::KIT) {
+		Drum* drum = static_cast<Kit*>(clip->output)->selectedDrum;
+		if (drum != nullptr && drum->type == DrumType::SOUND) {
+			sound = static_cast<SoundDrum*>(drum);
+		}
+	}
+	return sound != nullptr && gui::menu_item::lxr::isAvailable(sound, deluge::processing::lxr::automatedParam(id));
+}
+
 // used with SelectEncoderAction to get the next synth or kit non-affect entire param
 void AutomationView::selectNonGlobalParam(int32_t offset, Clip* clip) {
 	bool foundPatchCable = false;
@@ -2780,16 +2835,17 @@ void AutomationView::selectNonGlobalParam(int32_t offset, Clip* clip) {
 		                                             kNumNonGlobalParamsForAutomation);
 		{
 			auto [kind, id] = nonGlobalParamsForAutomation[idx];
-			if ((clip->output->type == OutputType::KIT) && (kind == params::Kind::UNPATCHED_SOUND)
-			    && (id == params::UNPATCHED_PORTAMENTO)) {
+			while (!isNonGlobalParamAvailable(clip, kind, id)) {
 				if (offset < 0) {
 					offset -= 1;
 				}
-				else if (offset > 0) {
+				else {
 					offset += 1;
 				}
 				idx = getNextSelectedParamArrayPosition(offset, clip->lastSelectedParamArrayPosition,
 				                                        kNumNonGlobalParamsForAutomation);
+				kind = nonGlobalParamsForAutomation[idx].first;
+				id = nonGlobalParamsForAutomation[idx].second;
 			}
 		}
 

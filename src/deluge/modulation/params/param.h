@@ -211,8 +211,48 @@ enum UnpatchedShared : ParamType {
 /// Unpatched params which are only used for Sounds
 enum UnpatchedSound : ParamType {
 	UNPATCHED_PORTAMENTO = UNPATCHED_NUM_SHARED,
+
+	// The drum synth (OscType::LXR) settings the Deluge automates; see processing/lxr/lxr_sound.h.
+	// They hold the LXR's 0..127 values as knob positions -64..63.
+	UNPATCHED_FIRST_LXR_PARAM,
+	UNPATCHED_LXR_COARSE = UNPATCHED_FIRST_LXR_PARAM,
+	UNPATCHED_LXR_FINE,
+	UNPATCHED_LXR_PULSE_WIDTH,
+	UNPATCHED_LXR_NOISE_FREQ,
+	UNPATCHED_LXR_MIX,
+	UNPATCHED_LXR_MOD1_FREQ,
+	UNPATCHED_LXR_MOD1_GAIN,
+	UNPATCHED_LXR_MOD2_FREQ,
+	UNPATCHED_LXR_MOD2_GAIN,
+	UNPATCHED_LXR_PITCH_DECAY,
+	UNPATCHED_LXR_PITCH_AMOUNT,
+	UNPATCHED_LXR_PITCH_SLOPE,
+	UNPATCHED_LXR_ATTACK,
+	UNPATCHED_LXR_DECAY,
+	UNPATCHED_LXR_SLOPE,
+	UNPATCHED_LXR_REPEAT,
+	UNPATCHED_LXR_TRANSIENT_LEVEL,
+	UNPATCHED_LXR_TRANSIENT_PITCH,
+	UNPATCHED_LXR_FILTER_FREQ,
+	UNPATCHED_LXR_FILTER_RESO,
+	UNPATCHED_LXR_FILTER_DRIVE,
+	UNPATCHED_LXR_DRIVE,
+	UNPATCHED_LXR_SAMPLE_RATE,
+	UNPATCHED_LXR_LEVEL,
+	UNPATCHED_LXR_VELO_AMOUNT,
+	UNPATCHED_LXR_LFO_RATE,
+	UNPATCHED_LXR_LFO_DEPTH,
+	UNPATCHED_LXR_LFO_PHASE,
+	UNPATCHED_LAST_LXR_PARAM = UNPATCHED_LXR_LFO_PHASE,
+
 	UNPATCHED_SOUND_MAX_NUM,
 };
+
+constexpr int32_t kNumLxrUnpatchedParams = UNPATCHED_LAST_LXR_PARAM - UNPATCHED_FIRST_LXR_PARAM + 1;
+
+constexpr bool isLxrUnpatchedParam(int32_t p) {
+	return p >= UNPATCHED_FIRST_LXR_PARAM && p <= UNPATCHED_LAST_LXR_PARAM;
+}
 
 /// Just for GlobalEffectables
 enum UnpatchedGlobal : ParamType {
@@ -260,6 +300,8 @@ constexpr ParamType kMaxNumUnpatchedParams =
 constexpr ParamType kUnpatchedAndPatchedMaximum = kMaxNumUnpatchedParams + UNPATCHED_START;
 
 static_assert(kMaxNumUnpatchedParams < STATIC_START, "Error: Too many UNPATCHED parameters, (collision with STATIC)");
+static_assert(kMaxNumUnpatchedParams <= kMaxNumUnsignedIntegerstoRepAllParams * 32,
+              "Error: Too many UNPATCHED parameters for ParamCollectionSummary's bit fields");
 
 bool isParamBipolar(Kind kind, int32_t paramID);
 bool isParamPan(Kind kind, int32_t paramID);

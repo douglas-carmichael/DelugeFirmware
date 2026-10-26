@@ -18,6 +18,7 @@
 #include "processing/source.h"
 #include "definitions_cxx.hpp"
 #include "dsp/dx/engine.h"
+#include "dsp/lxr/patch.h"
 #include "gui/ui/browser/sample_browser.h"
 #include "gui/ui/sound_editor.h"
 #include "memory/memory_allocator_interface.h"
@@ -31,6 +32,7 @@
 #include "storage/wave_table/wave_table.h"
 #include "util/functions.h"
 #include <cstring>
+#include <new>
 
 Source::Source() {
 
@@ -53,6 +55,11 @@ Source::~Source() {
 		dxPatch->~DxPatch();
 		delugeDealloc(dxPatch);
 		dxPatch = nullptr;
+	}
+	if (lxrPatch != nullptr) {
+		lxrPatch->~Patch();
+		delugeDealloc(lxrPatch);
+		lxrPatch = nullptr;
 	}
 	destructAllMultiRanges();
 }
@@ -297,6 +304,9 @@ doChangeType:
 	if (oscType == OscType::DX7) {
 		ensureDxPatch();
 	}
+	else if (oscType == OscType::LXR) {
+		ensureLxrPatch();
+	}
 }
 
 DxPatch* Source::ensureDxPatch() {
@@ -309,6 +319,16 @@ DxPatch* Source::ensureDxPatch() {
 	}
 	return dxPatch;
 };
+
+deluge::dsp::lxr::Patch* Source::ensureLxrPatch() {
+	if (lxrPatch == nullptr) {
+		void* memory = allocLowSpeed(sizeof(deluge::dsp::lxr::Patch));
+		if (memory != nullptr) {
+			lxrPatch = new (memory) deluge::dsp::lxr::Patch();
+		}
+	}
+	return lxrPatch;
+}
 
 /*
     for (int32_t e = 0; e < ranges.getNumElements(); e++) {

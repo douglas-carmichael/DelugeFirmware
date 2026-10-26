@@ -36,6 +36,8 @@ target_link_libraries(deluge_dsp PRIVATE
 target_compile_definitions(deluge_dsp PUBLIC
         $<$<CONFIG:DEBUG,RELWITHDEBINFO>:IN_HARDWARE_DEBUG=1>
         $<$<CONFIG:DEBUG,RELWITHDEBINFO>:ENABLE_TEXT_OUTPUT=1>
+        # see the option in the top-level CMakeLists.txt; PUBLIC so that the deluge target gets it too
+        FEATURE_LXR_ENGINE=$<BOOL:${FEATURE_LXR_ENGINE}>
 )
 
 target_compile_options(deluge_dsp PRIVATE

@@ -20,6 +20,8 @@
 #include "definitions_cxx.hpp"
 #include "dsp/dx/engine.h"
 #include "dsp/filter/filter_set.h"
+#include "dsp/lxr/feature.h"
+#include "dsp/lxr/voice.h"
 #include "dsp/oscillators/sine_osc.h"
 #include "dsp/timestretch/time_stretcher.h"
 #include "dsp/util.hpp"
@@ -38,6 +40,7 @@
 #include "playback/playback_handler.h"
 #include "processing/engines/audio_engine.h"
 #include "processing/live/live_pitch_shifter.h"
+#include "processing/lxr/lxr_sound.h"
 #include "processing/render_wave.h"
 #include "processing/sound/sound.h"
 #include "storage/audio/audio_file_manager.h"
@@ -50,6 +53,7 @@
 #include "dsp/oscillators/basic_waves.h"
 #include "dsp/oscillators/oscillator.h"
 #include "util/misc.h"
+#include <cmath>
 #include <cstring>
 #include <new>
 
@@ -313,6 +317,26 @@ activenessDetermined:
 				}
 			}
 		}
+
+#if FEATURE_LXR_ENGINE
+		// Every note is a new hit of the drum synth, from the settings of right now
+		if (oscType == OscType::LXR) [[unlikely]] {
+			deluge::dsp::lxr::Patch* patch = source->ensureLxrPatch();
+			if (patch == nullptr) [[unlikely]] {
+				return false;
+			}
+			deluge::dsp::lxr::Values values;
+			deluge::processing::lxr::getValues(*patch, *paramManager->getUnpatchedParamSet(), values);
+			const float bpm = deluge::processing::lxr::currentBPM();
+			for (int32_t u = 0; u < sound.numUnison; u++) {
+				deluge::dsp::lxr::Voice* lxrVoice = unisonParts[u].sources[s].lxrVoice;
+				if (unisonParts[u].sources[s].active && lxrVoice != nullptr) {
+					lxrVoice->init(patch->model(), values, static_cast<uint32_t>(getNoise()), bpm);
+					lxrVoice->trigger(values, velocity, AudioEngine::audioSampleTimer);
+				}
+			}
+		}
+#endif
 	}
 
 	if (sound.getSynthMode() == SynthMode::FM) {
@@ -2456,6 +2480,55 @@ dontUseCache: {}
 			}
 
 			// Or regular wave
+		}
+		else if (sound.sources[s].oscType == OscType::LXR) {
+#if !FEATURE_LXR_ENGINE
+			goto instantUnassign;
+#else
+			deluge::dsp::lxr::Voice* lxrVoice = voiceUnisonPartSource->lxrVoice;
+			deluge::dsp::lxr::Patch* patch = sound.sources[s].lxrPatch;
+			if (lxrVoice == nullptr || patch == nullptr) [[unlikely]] {
+				goto instantUnassign;
+			}
+
+			deluge::dsp::lxr::Values values;
+			deluge::processing::lxr::getValues(*patch, *paramManager->getUnpatchedParamSet(), values);
+
+			// The note and the Deluge's pitch params, relative to the phase increment of middle C, the note the LXR
+			// plays a voice on at its own tuning. A ratio within rounding of 1 is 1, so that an untransposed voice is
+			// tuned exactly as on the LXR.
+			constexpr float kMiddleCPhaseIncrement = 25480118.f; // noteFrequencyTable[8] >> 6
+			float pitchRatio = static_cast<float>(phaseIncrement) / kMiddleCPhaseIncrement;
+			if (std::abs(pitchRatio - 1.f) < 1e-6f) {
+				pitchRatio = 1.f;
+			}
+			const float bpm = deluge::processing::lxr::currentBPM();
+
+			static int32_t lxrBuffer[SSI_TX_BUFFER_NUM_SAMPLES];
+			int32_t sourceAmplitudeNow = sourceAmplitude;
+			bool active = true;
+			for (int32_t offset = 0; offset < numSamples; offset += SSI_TX_BUFFER_NUM_SAMPLES) {
+				const int32_t numThisTime = std::min<int32_t>(numSamples - offset, SSI_TX_BUFFER_NUM_SAMPLES);
+				active = lxrVoice->render(patch->model(), values, lxrBuffer, numThisTime, pitchRatio, bpm);
+
+				// The voice renders 16-bit samples; give them the level a 16-bit sample would have
+				for (int32_t i = 0; i < numThisTime; i++) {
+					sourceAmplitudeNow += amplitudeIncrement;
+					const int32_t amplified = multiply_32x32_rshift32(lxrBuffer[i] << 16, sourceAmplitudeNow) << 3;
+					const int32_t pos = offset + i;
+					if (stereoUnison) {
+						oscBuffer[(pos << 1)] += multiply_32x32_rshift32(amplified, amplitudeL) << 2;
+						oscBuffer[(pos << 1) + 1] += multiply_32x32_rshift32(amplified, amplitudeR) << 2;
+					}
+					else {
+						oscBuffer[pos] += amplified;
+					}
+				}
+			}
+			if (!active) {
+				goto instantUnassign;
+			}
+#endif
 		}
 		else [[likely]] {
 			uint32_t oscSyncPosThisUnison;

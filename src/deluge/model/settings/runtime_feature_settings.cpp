@@ -217,6 +217,10 @@ void RuntimeFeatureSettings::init() {
 	    {l10n::getView(STRING_FOR_SHORTCUT_OVERLAY_MENU_AND_CLIP),
 	     static_cast<uint32_t>(RuntimeFeatureStateShortcutOverlay::MenuAndClip)},
 	};
+
+	// EnableLxrEngine
+	SetupOnOffSetting(settings[RuntimeFeatureSettingType::EnableLxrEngine], STRING_FOR_COMMUNITY_FEATURE_LXR_ENGINE,
+	                  "enableDrumSynthEngine", RuntimeFeatureStateToggle::Off);
 }
 
 void RuntimeFeatureSettings::factoryReset(bool showPopup) {

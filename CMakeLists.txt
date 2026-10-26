@@ -76,6 +76,10 @@ option(ENABLE_SYSEX_LOAD "Enable loading firmware over midi sysex" OFF)
 # MATRIX DRIVER pad logging
 option(ENABLE_MATRIX_DEBUG "Enable logging of pad events" OFF)
 
+# Drum synth engine (oscillator type LXR, ported from the Erica Synths LXR-02 firmware), about 100 kB of image.
+# Without it, sounds using the engine still load and save, but play silently.
+option(FEATURE_LXR_ENGINE "Build the drum synth engine" ON)
+
 # Colored output
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 add_compile_options($<$<CXX_COMPILER_ID:Clang>:-fansi-escape-codes>)

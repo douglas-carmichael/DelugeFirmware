@@ -233,6 +233,7 @@ private:
 
 	// Select Encoder Action
 	void selectGlobalParam(int32_t offset, Clip* clip);
+	bool isNonGlobalParamAvailable(Clip* clip, deluge::modulation::params::Kind kind, int32_t id);
 	void selectNonGlobalParam(int32_t offset, Clip* clip);
 	bool selectPatchCable(int32_t offset, Clip* clip);
 	bool selectPatchCableAtIndex(Clip* clip, PatchCableSet* set, int32_t patchCableIndex, bool& foundCurrentPatchCable);

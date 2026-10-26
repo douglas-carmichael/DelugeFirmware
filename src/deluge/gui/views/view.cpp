@@ -80,6 +80,7 @@
 #include "playback/mode/session.h"
 #include "processing/audio_output.h"
 #include "processing/engines/audio_engine.h"
+#include "processing/lxr/lxr_sound.h"
 #include "processing/sound/sound.h"
 #include "processing/sound/sound_drum.h"
 #include "processing/sound/sound_instrument.h"
@@ -1319,6 +1320,12 @@ void View::flushPendingModEncoderValuePopup() {
 int32_t View::calculateKnobPosForDisplay(params::Kind kind, int32_t paramID, int32_t knobPos) {
 	if (kind == params::Kind::MIDI) {
 		return knobPos;
+	}
+
+	// The drum synth's settings show the LXR's own values, as their menus do
+	if (kind == params::Kind::UNPATCHED_SOUND && params::isLxrUnpatchedParam(paramID)) {
+		return std::min<int32_t>(knobPos, 127)
+		       - deluge::dsp::lxr::displayOffset(deluge::processing::lxr::automatedParam(paramID));
 	}
 
 	float knobPosFloat = static_cast<float>(knobPos);
