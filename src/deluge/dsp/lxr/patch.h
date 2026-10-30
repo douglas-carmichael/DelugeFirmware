@@ -132,7 +132,8 @@ struct Patch {
 	void getValues(Values& values) const;
 
 	/// A voice that can sound for ever, because its amp envelope never decays (DECAY at 127, or a repeating
-	/// attack phase that never decays). Such a voice is ended by note-off instead.
+	/// attack phase that never decays). Such a voice is ended by note-off instead. This reads the Patch's own
+	/// values; on the Deluge, DECAY, REPEAT and ATTACK are params: see processing::lxr::sustainsForever().
 	[[nodiscard]] bool sustainsForever() const;
 
 	/// File format: a format version byte, the voice type, then one byte per Param

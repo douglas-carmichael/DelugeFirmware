@@ -107,6 +107,10 @@ constexpr float paramValueToValue(int32_t value) {
 void getValues(const deluge::dsp::lxr::Patch& patch, UnpatchedParamSet& unpatchedParams,
                deluge::dsp::lxr::Values& values);
 
+/// Patch::sustainsForever() with the automated settings as their params are now (the Patch's own values for those
+/// go unused): whether a voice with these settings can sound for ever, so that note-off ends it
+bool sustainsForever(const deluge::dsp::lxr::Patch& patch, UnpatchedParamSet& unpatchedParams);
+
 /// The default values for the automated settings (those of the default voice type), for Sound::initParams()
 void initParams(UnpatchedParamSet& unpatchedParams);
 

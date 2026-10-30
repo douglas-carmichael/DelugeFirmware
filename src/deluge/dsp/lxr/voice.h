@@ -42,6 +42,11 @@ public:
 	/// @return false once the voice has died away; everything it renders after that is silence
 	bool render(Model model, const Values& values, int32_t* out, int32_t numSamples, float pitchRatio, float bpm);
 
+	/// Whether the amp envelope can no longer end by itself: it holds its level for ever, as at DECAY 127 or in a
+	/// repeating attack phase at ATTACK 127, whether the settings or their modulation put it there. Note-off ends such
+	/// a voice instead.
+	[[nodiscard]] bool sustainsForever() const;
+
 private:
 	void applyAllValues(const Values& values);
 	void applyValue(Param param, float value);

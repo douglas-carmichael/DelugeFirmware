@@ -245,6 +245,60 @@ TEST(LxrVoiceTest, decayAt127SustainsForever) {
 	CHECK(peak(hit.samples, 2 * kSampleRate) > 1000);
 }
 
+namespace {
+
+/// Whether a voice of this patch, struck at velocity and played for numSamples, can no longer end by itself
+bool holdsAfter(const lxr::Patch& patch, int32_t numSamples, uint8_t velocity = 100) {
+	lxr::Values values;
+	patch.getValues(values);
+	lxr::Voice voice;
+	voice.init(patch.model(), values, 1234, 120);
+	voice.trigger(values, velocity, 0);
+	std::vector<int32_t> buffer(std::max<int32_t>(numSamples, 1));
+	voice.render(patch.model(), values, buffer.data(), numSamples, 1, 120);
+	return voice.sustainsForever();
+}
+
+} // namespace
+
+TEST(LxrVoiceTest, sustainsForeverOnlyWhileTheEnvelopeHolds) {
+	lxr::Patch patch;
+	CHECK_FALSE(holdsAfter(patch, kSampleRate / 10));
+	patch.set(Param::DECAY, 127);
+	CHECK(holdsAfter(patch, 0)); // still opening: it decays at 127 next
+	CHECK(holdsAfter(patch, kSampleRate));
+	patch.set(Param::DECAY, 126);
+	CHECK_FALSE(holdsAfter(patch, kSampleRate));
+
+	// ATTACK at 127 never opens the envelope at all
+	patch.loadDefaults(VoiceType::DRUM_1);
+	patch.set(Param::ATTACK, 127);
+	CHECK_FALSE(holdsAfter(patch, kSampleRate / 10));
+
+	// A repeating attack phase at ATTACK 127, which only the snare and cymbal have
+	patch.loadDefaults(VoiceType::SNARE);
+	patch.set(Param::REPEAT, 3);
+	patch.set(Param::ATTACK, 127);
+	CHECK(holdsAfter(patch, kSampleRate));
+	patch.set(Param::ATTACK, 100);
+	CHECK_FALSE(holdsAfter(patch, kSampleRate / 10));
+
+	// The hats take their decay at the hit
+	patch.loadDefaults(VoiceType::OPEN_HAT);
+	patch.set(Param::DECAY, 127);
+	CHECK(holdsAfter(patch, kSampleRate));
+}
+
+TEST(LxrVoiceTest, sustainsForeverWhenModulationHoldsIt) {
+	// Velocity on DECAY takes 120 to 127 at full velocity, which only the voice itself can tell
+	lxr::Patch patch;
+	patch.set(Param::DECAY, 120);
+	patch.set(Param::VELO_DEST, static_cast<int32_t>(Param::DECAY) + 1);
+	patch.set(Param::VELO_AMOUNT, 127);
+	CHECK(holdsAfter(patch, kSampleRate, 127));
+	CHECK_FALSE(holdsAfter(patch, kSampleRate, 64));
+}
+
 TEST(LxrVoiceTest, pitchRatioSetsThePitch) {
 	// A steady sine: no pitch envelope, modulator, transient or decay
 	lxr::Patch patch;

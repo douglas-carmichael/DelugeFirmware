@@ -46,6 +46,15 @@ void getValues(const Patch& patch, UnpatchedParamSet& unpatchedParams, Values& v
 	}
 }
 
+bool sustainsForever(const Patch& patch, UnpatchedParamSet& unpatchedParams) {
+	Patch current = patch;
+	for (int32_t i = 0; i < params::kNumLxrUnpatchedParams; i++) {
+		current.set(kAutomatedParams[i],
+		            paramValueToSetting(unpatchedParams.getValue(params::UNPATCHED_FIRST_LXR_PARAM + i)));
+	}
+	return current.sustainsForever();
+}
+
 void initParams(UnpatchedParamSet& unpatchedParams) {
 	const Patch defaults;
 	for (int32_t i = 0; i < params::kNumLxrUnpatchedParams; i++) {

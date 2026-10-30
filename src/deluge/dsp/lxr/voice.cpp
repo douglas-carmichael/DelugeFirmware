@@ -505,6 +505,25 @@ void Voice::computeBlock(const Values& values) {
 	}
 }
 
+bool Voice::sustainsForever() const {
+	if (finished_) {
+		return false;
+	}
+	// slopeEg2_calc(): a phase whose rate is 0 holds its level for ever. The repeating attack phase runs at the attack
+	// rate; the decay phase follows the attack phase, or the last repeat.
+	switch (oscVolEg_.state) {
+	case EG_A:
+		// At an attack rate of 0 the envelope never opens: silence, which ends
+		return oscVolEg_.attack > 0 && oscVolEg_.decay <= 0;
+	case EG_D:
+		return oscVolEg_.decay <= 0 && oscVolEg_.value > 0;
+	case EG_REPEAT:
+		return oscVolEg_.attack <= 0 || oscVolEg_.decay <= 0;
+	default:
+		return false;
+	}
+}
+
 bool Voice::envelopeFinished() const {
 	// The drum ramps its gain from one block's envelope value to the next, and the envelope can dip below 0 for
 	// a block before it settles there

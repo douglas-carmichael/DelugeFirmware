@@ -598,6 +598,26 @@ makeInactive: // Frequency too high to render! (Higher than 22.05kHz)
 	}
 }
 
+bool Voice::lxrSustainsForever(const Sound& sound) const {
+#if FEATURE_LXR_ENGINE
+	if (sound.synthMode == SynthMode::FM) {
+		return false;
+	}
+	for (int32_t s = 0; s < kNumSources; s++) {
+		if (sound.sources[s].oscType != OscType::LXR) {
+			continue;
+		}
+		for (int32_t u = 0; u < sound.numUnison; u++) {
+			const VoiceUnisonPartSource& source = unisonParts[u].sources[s];
+			if (source.active && source.lxrVoice != nullptr && source.lxrVoice->sustainsForever()) {
+				return true;
+			}
+		}
+	}
+#endif
+	return false;
+}
+
 void Voice::noteOff(ModelStackWithSoundFlags* modelStack, bool allowReleaseStage) {
 
 	for (int32_t s = 0; s < kNumSources; s++) {
@@ -607,8 +627,9 @@ void Voice::noteOff(ModelStackWithSoundFlags* modelStack, bool allowReleaseStage
 	ParamManagerForTimeline* paramManager = (ParamManagerForTimeline*)modelStack->paramManager;
 	Sound& sound = *static_cast<Sound*>(modelStack->modControllable);
 
-	// Only do it if note-offs are meant to be processed for this sound. Otherwise ignore it.
-	if (sound.allowNoteTails(modelStack, true)) {
+	// Only do it if note-offs are meant to be processed for this sound, or if a drum synth hit can no longer end by
+	// itself. Otherwise ignore it.
+	if (sound.allowNoteTails(modelStack, true) || lxrSustainsForever(sound)) {
 
 		// If no release-stage, we'll stop as soon as we can
 		if (!allowReleaseStage || !hasReleaseStage()) {
@@ -758,8 +779,8 @@ uint32_t Voice::getLocalLFOPhaseIncrement(LFO_ID lfoId, deluge::modulation::para
 	bool didStereoTempBuffer = false;
 
 	// If we've previously ignored a note-off, we need to check that the user hasn't changed the preset so that we're
-	// now waiting for a note-off again
-	if (previouslyIgnoredNoteOff && sound.allowNoteTails(modelStack, true)) {
+	// now waiting for a note-off again, and that a drum synth hit hasn't come to hold for ever since
+	if (previouslyIgnoredNoteOff && (sound.allowNoteTails(modelStack, true) || lxrSustainsForever(sound))) {
 		noteOff(modelStack);
 	}
 

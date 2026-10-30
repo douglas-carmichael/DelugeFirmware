@@ -157,6 +157,9 @@ private:
 	                             int32_t amplitude, uint32_t phaseIncrement, int32_t feedbackAmount,
 	                             int32_t* lastFeedbackValue, int32_t amplitudeIncrement);
 	bool areAllUnisonPartsInactive(ModelStackWithSoundFlags& modelStack) const;
+	/// Whether a drum synth source can no longer end by itself (deluge::dsp::lxr::Voice::sustainsForever()), so
+	/// that only note-off can end this voice, whatever the sound's settings say: modulation can make it hold
+	[[nodiscard]] bool lxrSustainsForever(const Sound& sound) const;
 	void setupPorta(const Sound& sound);
 	int32_t combineExpressionValues(const Sound& sound, int32_t expressionDimension) const;
 };

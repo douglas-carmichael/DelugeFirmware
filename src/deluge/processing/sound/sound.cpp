@@ -1958,9 +1958,11 @@ bool Sound::allowNoteTails(ModelStackWithSoundFlags* modelStack, bool disregardS
 
 		anyActiveSources = sourceEverActive || anyActiveSources;
 
-		// A drum synth voice ends by itself, like a one-shot sample, unless it can sound for ever
+		// A drum synth voice ends by itself, like a one-shot sample, unless its settings make it sound for ever
 		if (sourceEverActive && sources[s].oscType == OscType::LXR) {
-			if (sources[s].lxrPatch != nullptr && sources[s].lxrPatch->sustainsForever()) {
+			if (sources[s].lxrPatch != nullptr
+			    && deluge::processing::lxr::sustainsForever(*sources[s].lxrPatch,
+			                                                *modelStack->paramManager->getUnpatchedParamSet())) {
 				return true;
 			}
 			continue;
