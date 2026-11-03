@@ -118,8 +118,13 @@ public:
 
 	// The AMP effect (a guitar amp and speaker cab): once per track, after its saturation and filters
 	deluge::dsp::amp::AmpEffect amp;
-	/// The AMP runs while it is on and the community feature is on too
+	/// The AMP runs while it is on (or fading off) and the community feature is on too
 	[[nodiscard]] bool ampIsActive() const;
+	/// Runs the AMP on a track's audio, with the knobs from its params; only while ampIsActive(). Kits and audio
+	/// tracks pass Input::BUS: a whole track comes in hotter than one sound.
+	void processAmp(std::span<StereoSample> buffer, ParamManager* paramManager,
+	                deluge::dsp::amp::AmpEffect::Input input = deluge::dsp::amp::AmpEffect::Input::SOUND);
+	void processAmp(std::span<q31_t> buffer, ParamManager* paramManager);
 
 	uint32_t lowSampleRatePos{};
 	uint32_t highSampleRatePos{};
@@ -181,4 +186,8 @@ private:
 
 	void processGrainFX(std::span<StereoSample> buffer, int32_t modFXRate, int32_t modFXDepth, int32_t* postFXVolume,
 	                    UnpatchedParamSet* unpatchedParams, bool anySoundComingIn, q31_t verbAmount);
+
+	void writeAmpToFile(Serializer& writer);
+	void readAmpFromFile(Deserializer& reader);
+	void setAmpKnobs(ParamManager* paramManager);
 };

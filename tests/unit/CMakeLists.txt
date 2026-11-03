@@ -74,6 +74,8 @@ file(GLOB_RECURSE deluge_SOURCES
         ../../src/deluge/io/midi/midi_queue.cpp
         # For FFT magnitude tests
         ../../src/deluge/util/fast_pythag.cpp
+        # For AMP effect tests (its memory comes from the tests, not amp_memory.cpp)
+        ../../src/deluge/dsp/amp/amp_effect.cpp
 )
 
 add_executable(UnitTests
@@ -101,6 +103,7 @@ add_executable(UnitTests
         fast_pythag_tests.cpp
         tick_interpolation_tests.cpp
         amp_sim_tests.cpp
+        amp_effect_tests.cpp
 )
 add_test(NAME UnitTests
         COMMAND UnitTests)

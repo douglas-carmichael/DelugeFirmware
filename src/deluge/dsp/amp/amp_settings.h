@@ -25,6 +25,9 @@ namespace deluge::dsp::amp {
 
 enum class ToneStackType : uint8_t { AMERICAN, BRITISH };
 
+/// MONO mixes the track to mono and runs one AMP, like a real amp; STEREO runs one AMP per side
+enum class Channels : uint8_t { MONO, STEREO };
+
 /// The knobs, 0..1 (0.5 is the middle), and the output level in dB. They can change while the AMP runs (setKnobs).
 struct Knobs {
 	float gain = 0.5f;
@@ -33,14 +36,29 @@ struct Knobs {
 	float treble = 0.5f;
 	float presence = 0.5f;
 	float levelDb = 0.0f;
+
+	bool operator==(const Knobs&) const = default;
 };
 
-/// Everything; changing anything but the knobs needs configure(), which also clears the state
+/// LEVEL's range on its 0..1 knob: the middle is 0 dB, the ends are -20 and +20 dB
+constexpr float kLevelRangeDb = 40.0f;
+
+/// The menu settings and the knobs. Changing anything but the knobs needs AmpSim::configure(), which also clears
+/// the state.
 struct Settings {
 	Knobs knobs;
 	int cab = 4; ///< 0 = no cab, 1..kNumCabs = kCabDesigns[cab - 1]
 	ToneStackType toneStack = ToneStackType::BRITISH;
-	int oversample = 2; ///< 1 or 2
+	int oversample = 2;                 ///< 1 or 2
+	Channels channels = Channels::MONO; ///< AmpEffect's: AmpSim itself is always mono
+
+	bool operator==(const Settings&) const = default;
+
+	/// Everything but the knobs (which are params, saved with the clip) is as a new AMP has it
+	[[nodiscard]] bool menuSettingsAreDefault() const {
+		const Settings d{};
+		return cab == d.cab && toneStack == d.toneStack && oversample == d.oversample && channels == d.channels;
+	}
 };
 
 } // namespace deluge::dsp::amp

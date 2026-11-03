@@ -420,6 +420,12 @@ bool UnpatchedParamSet::shouldParamIndicateMiddleValue(ModelStackWithParamId con
 		       || isUIModeActive(UI_MODE_STUTTERING);
 	case params::UNPATCHED_BASS:
 	case params::UNPATCHED_TREBLE:
+	// The AMP's tone and level knobs: the middle is the reference (noon, 0 dB)
+	case params::UNPATCHED_AMP_BASS:
+	case params::UNPATCHED_AMP_MID:
+	case params::UNPATCHED_AMP_TREBLE:
+	case params::UNPATCHED_AMP_PRESENCE:
+	case params::UNPATCHED_AMP_LEVEL:
 		return true;
 	}
 	// Global

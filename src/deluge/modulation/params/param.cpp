@@ -287,6 +287,12 @@ char const* getParamDisplayName(Kind kind, int32_t p) {
 		    [UNPATCHED_MOD_FX_FEEDBACK] = STRING_FOR_MODFX_FEEDBACK,
 		    [UNPATCHED_SIDECHAIN_SHAPE] = STRING_FOR_SIDECHAIN_SHAPE,
 		    [UNPATCHED_COMPRESSOR_THRESHOLD] = STRING_FOR_THRESHOLD,
+		    [UNPATCHED_AMP_GAIN] = STRING_FOR_AMP_GAIN,
+		    [UNPATCHED_AMP_BASS] = STRING_FOR_AMP_BASS,
+		    [UNPATCHED_AMP_MID] = STRING_FOR_AMP_MID,
+		    [UNPATCHED_AMP_TREBLE] = STRING_FOR_AMP_TREBLE,
+		    [UNPATCHED_AMP_PRESENCE] = STRING_FOR_AMP_PRESENCE,
+		    [UNPATCHED_AMP_LEVEL] = STRING_FOR_AMP_LEVEL,
 		    [UNPATCHED_ARP_GATE] = STRING_FOR_ARP_GATE_MENU_TITLE,
 		    [UNPATCHED_ARP_RHYTHM] = STRING_FOR_ARP_RHYTHM_MENU_TITLE,
 		    [UNPATCHED_ARP_SEQUENCE_LENGTH] = STRING_FOR_ARP_SEQUENCE_LENGTH_MENU_TITLE,
@@ -521,6 +527,24 @@ constexpr char const* paramNameForFileConst(Kind const kind, ParamType const par
 
 		case UNPATCHED_COMPRESSOR_THRESHOLD:
 			return "compressorThreshold";
+
+		case UNPATCHED_AMP_GAIN:
+			return "ampGain";
+
+		case UNPATCHED_AMP_BASS:
+			return "ampBass";
+
+		case UNPATCHED_AMP_MID:
+			return "ampMid";
+
+		case UNPATCHED_AMP_TREBLE:
+			return "ampTreble";
+
+		case UNPATCHED_AMP_PRESENCE:
+			return "ampPresence";
+
+		case UNPATCHED_AMP_LEVEL:
+			return "ampLevel";
 
 		case UNPATCHED_ARP_GATE:
 			return "arpGate";

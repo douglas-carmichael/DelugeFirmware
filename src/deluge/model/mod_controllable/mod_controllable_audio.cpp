@@ -42,10 +42,27 @@
 #include "processing/sound/sound.h"
 #include "storage/storage_manager.h"
 #include <algorithm>
+#include <array>
+#include <utility>
 
 namespace params = deluge::modulation::params;
 
 extern int32_t spareRenderingBuffer[][SSI_TX_BUFFER_NUM_SAMPLES];
+
+namespace {
+/// The AMP's knobs, by their names in song and preset files (the same as params::paramNameForFile())
+constexpr std::array<std::pair<char const*, params::ParamType>, 6> kAmpParams{{
+    {"ampGain", params::UNPATCHED_AMP_GAIN},
+    {"ampBass", params::UNPATCHED_AMP_BASS},
+    {"ampMid", params::UNPATCHED_AMP_MID},
+    {"ampTreble", params::UNPATCHED_AMP_TREBLE},
+    {"ampPresence", params::UNPATCHED_AMP_PRESENCE},
+    {"ampLevel", params::UNPATCHED_AMP_LEVEL},
+}};
+
+/// The AMP's cab settings by their names in files: 0 is no cab, then deluge::dsp::amp::kCabDesigns' order
+constexpr std::array<char const*, 5> kAmpCabNames{"off", "1x12Open", "2x12", "4x12", "4x12Smooth"};
+} // namespace
 
 ModControllableAudio::ModControllableAudio() {
 
@@ -99,6 +116,7 @@ void ModControllableAudio::cloneFrom(ModControllableAudio* other) {
 	midi_knobs = other->midi_knobs; // Could fail if no RAM... not too big a concern
 	delay = other->delay;
 	stutterConfig = other->stutterConfig;
+	amp.copyFrom(other->amp); // if there's no memory for it, the copy's AMP is off
 }
 
 void ModControllableAudio::initParams(ParamManager* paramManager) {
@@ -137,6 +155,11 @@ void ModControllableAudio::initParams(ParamManager* paramManager) {
 
 	unpatchedParams->params[params::UNPATCHED_SIDECHAIN_SHAPE].setCurrentValueBasicForSetup(-601295438);
 	unpatchedParams->params[params::UNPATCHED_COMPRESSOR_THRESHOLD].setCurrentValueBasicForSetup(0);
+
+	// The AMP's knobs all start in the middle
+	for (const auto& [name, id] : kAmpParams) {
+		unpatchedParams->params[id].setCurrentValueBasicForSetup(0);
+	}
 }
 
 bool ModControllableAudio::hasBassAdjusted(ParamManager* paramManager) {
@@ -484,6 +507,64 @@ void ModControllableAudio::writeTagsToFile(Serializer& writer) {
 	writer.writeAttribute("reverse", stutterConfig.reversed);
 	writer.writeAttribute("pingPong", stutterConfig.pingPong);
 	writer.closeTag();
+
+	writeAmpToFile(writer);
+}
+
+void ModControllableAudio::writeAmpToFile(Serializer& writer) {
+	using namespace deluge::dsp::amp;
+	// Community firmware, only once the AMP has been used: older firmware skips the tag and plays without the AMP
+	const Settings& s = amp.settings();
+	if (!amp.isEnabled() && s.menuSettingsAreDefault()) {
+		return;
+	}
+	writer.writeOpeningTagBeginning("amp");
+	writer.writeAttribute("on", static_cast<int32_t>(amp.isEnabled()));
+	writer.writeAttribute("cab", kAmpCabNames[std::clamp(s.cab, 0, static_cast<int>(kAmpCabNames.size()) - 1)]);
+	writer.writeAttribute("toneStack", s.toneStack == ToneStackType::AMERICAN ? "american" : "british");
+	writer.writeAttribute("quality", s.oversample);
+	writer.writeAttribute("channels", s.channels == Channels::STEREO ? "stereo" : "mono");
+	writer.closeTag();
+}
+
+void ModControllableAudio::readAmpFromFile(Deserializer& reader) {
+	using namespace deluge::dsp::amp;
+	Settings s;
+	bool on = false;
+	char const* tagName;
+	reader.match('{');
+	while (*(tagName = reader.readNextTagOrAttributeName())) {
+		if (!strcmp(tagName, "on")) {
+			on = reader.readTagOrAttributeValueInt() != 0;
+			reader.exitTag("on");
+		}
+		else if (!strcmp(tagName, "cab")) {
+			char const* name = reader.readTagOrAttributeValue();
+			const auto cab = std::ranges::find_if(kAmpCabNames, [&](char const* n) { return !strcmp(name, n); });
+			if (cab != kAmpCabNames.end()) {
+				s.cab = static_cast<int>(cab - kAmpCabNames.begin());
+			}
+			reader.exitTag("cab");
+		}
+		else if (!strcmp(tagName, "toneStack")) {
+			s.toneStack = strcmp(reader.readTagOrAttributeValue(), "american") != 0 ? ToneStackType::BRITISH
+			                                                                        : ToneStackType::AMERICAN;
+			reader.exitTag("toneStack");
+		}
+		else if (!strcmp(tagName, "quality")) {
+			s.oversample = (reader.readTagOrAttributeValueInt() == 1) ? 1 : 2;
+			reader.exitTag("quality");
+		}
+		else if (!strcmp(tagName, "channels")) {
+			s.channels = strcmp(reader.readTagOrAttributeValue(), "stereo") != 0 ? Channels::MONO : Channels::STEREO;
+			reader.exitTag("channels");
+		}
+		else {
+			reader.exitTag(tagName);
+		}
+	}
+	amp.setSettings(s);
+	amp.setEnabled(on); // if there's no memory for it, it stays off
 }
 
 void ModControllableAudio::writeParamAttributesToFile(Serializer& writer, ParamManager* paramManager,
@@ -531,6 +612,12 @@ void ModControllableAudio::writeParamAttributesToFile(Serializer& writer, ParamM
 	unpatchedParams->writeParamAsAttribute(writer, "spreadGate", params::UNPATCHED_ARP_SPREAD_GATE, writeAutomation);
 	unpatchedParams->writeParamAsAttribute(writer, "spreadOctave", params::UNPATCHED_ARP_SPREAD_OCTAVE,
 	                                       writeAutomation);
+
+	// The AMP's knobs, only once they've moved from the middle or have automation: files don't change until the AMP
+	// is used, and older firmware skips these
+	for (const auto& [name, id] : kAmpParams) {
+		unpatchedParams->writeParamAsAttribute(writer, name, id, writeAutomation, true, valuesForOverride);
+	}
 }
 
 void ModControllableAudio::writeParamTagsToFile(Serializer& writer, ParamManager* paramManager, bool writeAutomation,
@@ -614,6 +701,13 @@ bool ModControllableAudio::readParamTagFromFile(Deserializer& reader, char const
 		unpatchedParams->readParam(reader, unpatchedParamsSummary, params::UNPATCHED_COMPRESSOR_THRESHOLD,
 		                           readAutomationUpToPos);
 		reader.exitTag("compressorThreshold");
+	}
+
+	else if (const auto amp =
+	             std::ranges::find_if(kAmpParams, [&](const auto& p) { return !strcmp(tagName, p.first); });
+	         amp != kAmpParams.end()) {
+		unpatchedParams->readParam(reader, unpatchedParamsSummary, amp->second, readAutomationUpToPos);
+		reader.exitTag(amp->first);
 	}
 
 	// Arpeggiator stuff
@@ -838,6 +932,11 @@ doReadPatchedParam:
 			}
 		}
 		reader.exitTag("delay", true);
+	}
+
+	else if (!strcmp(tagName, "amp")) {
+		readAmpFromFile(reader);
+		reader.exitTag("amp", true);
 	}
 
 	else if (!strcmp(tagName, "audioCompressor")) {
@@ -1486,7 +1585,34 @@ void ModControllableAudio::wontBeRenderedForAWhile() {
 }
 
 bool ModControllableAudio::ampIsActive() const {
-	return amp.isOn() && runtimeFeatureSettings.isOn(RuntimeFeatureSettingType::AmpSim);
+	return amp.isActive() && runtimeFeatureSettings.isOn(RuntimeFeatureSettingType::AmpSim);
+}
+
+void ModControllableAudio::setAmpKnobs(ParamManager* paramManager) {
+	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
+	// A param's whole range, -2^31 .. 2^31 - 1 (0 is the middle), as 0..1
+	const auto knob = [&](params::ParamType id) {
+		return (static_cast<float>(unpatchedParams->getValue(id)) + 2147483648.0f) * (1.0f / 4294967296.0f);
+	};
+	deluge::dsp::amp::Knobs k;
+	k.gain = knob(params::UNPATCHED_AMP_GAIN);
+	k.bass = knob(params::UNPATCHED_AMP_BASS);
+	k.mid = knob(params::UNPATCHED_AMP_MID);
+	k.treble = knob(params::UNPATCHED_AMP_TREBLE);
+	k.presence = knob(params::UNPATCHED_AMP_PRESENCE);
+	k.levelDb = (knob(params::UNPATCHED_AMP_LEVEL) - 0.5f) * deluge::dsp::amp::kLevelRangeDb;
+	amp.setKnobs(k);
+}
+
+void ModControllableAudio::processAmp(std::span<StereoSample> buffer, ParamManager* paramManager,
+                                      deluge::dsp::amp::AmpEffect::Input input) {
+	setAmpKnobs(paramManager);
+	amp.process(buffer, input);
+}
+
+void ModControllableAudio::processAmp(std::span<q31_t> buffer, ParamManager* paramManager) {
+	setAmpKnobs(paramManager);
+	amp.process(buffer);
 }
 
 void ModControllableAudio::clearModFXMemory() {

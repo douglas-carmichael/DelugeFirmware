@@ -1,6 +1,7 @@
 #include "../menu_item/randomizer/midi_cv/note_probability.h"
 #include "gui/l10n/strings.h"
 #include "gui/menu_item/active_scales.h"
+#include "gui/menu_item/amp/amp.h"
 #include "gui/menu_item/arpeggiator/arp_unpatched_param.h"
 #include "gui/menu_item/arpeggiator/chord_type.h"
 #include "gui/menu_item/arpeggiator/include_in_kit_arp.h"
@@ -648,6 +649,42 @@ PLACE_SDRAM_BSS HorizontalMenu soundDistortionMenu{
     },
 };
 
+// AMP (the amp and cab simulation), for every track type but not the song --------------------
+PLACE_SDRAM_BSS amp::Enabled ampEnabledMenu{STRING_FOR_AMP, STRING_FOR_AMP};
+PLACE_SDRAM_BSS amp::Knob ampGainMenu{STRING_FOR_GAIN, STRING_FOR_AMP_GAIN, STRING_FOR_GAIN,
+                                      params::UNPATCHED_AMP_GAIN};
+PLACE_SDRAM_BSS amp::Knob ampLevelMenu{STRING_FOR_LEVEL, STRING_FOR_AMP_LEVEL, STRING_FOR_LEVEL_SHORT,
+                                       params::UNPATCHED_AMP_LEVEL};
+PLACE_SDRAM_BSS amp::Cab ampCabMenu{STRING_FOR_CAB, STRING_FOR_CAB};
+PLACE_SDRAM_BSS amp::Knob ampBassMenu{STRING_FOR_BASS, STRING_FOR_AMP_BASS, STRING_FOR_BASS,
+                                      params::UNPATCHED_AMP_BASS};
+PLACE_SDRAM_BSS amp::Knob ampMidMenu{STRING_FOR_MID, STRING_FOR_AMP_MID, STRING_FOR_MID, params::UNPATCHED_AMP_MID};
+PLACE_SDRAM_BSS amp::Knob ampTrebleMenu{STRING_FOR_TREBLE, STRING_FOR_AMP_TREBLE, STRING_FOR_TREBLE,
+                                        params::UNPATCHED_AMP_TREBLE};
+PLACE_SDRAM_BSS amp::Knob ampPresenceMenu{STRING_FOR_PRESENCE, STRING_FOR_AMP_PRESENCE, STRING_FOR_PRESENCE_SHORT,
+                                          params::UNPATCHED_AMP_PRESENCE};
+PLACE_SDRAM_BSS amp::ToneStack ampToneStackMenu{STRING_FOR_TONE_STACK, STRING_FOR_TONE_STACK_SHORT};
+PLACE_SDRAM_BSS amp::Quality ampQualityMenu{STRING_FOR_QUALITY, STRING_FOR_QUALITY_SHORT};
+PLACE_SDRAM_BSS amp::Channels ampChannelsMenu{STRING_FOR_CHANNELS, STRING_FOR_CHANNELS_SHORT};
+
+// Three pages of four slots: AMP, GAIN, LEVEL, CAB / BASS, MID, TREBLE, PRESENCE / STACK, QUALITY, CHANNELS
+PLACE_SDRAM_BSS amp::AmpMenu ampMenu{
+    STRING_FOR_AMP,
+    {
+        &ampEnabledMenu,
+        &ampGainMenu,
+        &ampLevelMenu,
+        &ampCabMenu,
+        &ampBassMenu,
+        &ampMidMenu,
+        &ampTrebleMenu,
+        &ampPresenceMenu,
+        &ampToneStackMenu,
+        &ampQualityMenu,
+        &ampChannelsMenu,
+    },
+};
+
 // Output MIDI for sound drums --------------------------------------------------------------
 PLACE_SDRAM_BSS midi::sound::OutputMidiChannel outputMidiChannelMenu{STRING_FOR_CHANNEL, STRING_FOR_CHANNEL};
 PLACE_SDRAM_BSS midi::sound::OutputMidiNoteForDrum outputMidiNoteForDrumMenu{STRING_FOR_NOTE, STRING_FOR_NOTE};
@@ -853,6 +890,7 @@ PLACE_SDRAM_BSS Submenu globalFXMenu{
         &stutterMenu,
         &globalModFXMenu,
         &globalDistortionMenu,
+        &ampMenu,
     },
 };
 
@@ -925,6 +963,7 @@ PLACE_SDRAM_BSS Submenu audioClipFXMenu{
         &stutterMenu,
         &globalModFXMenu,
         &audioClipDistortionMenu,
+        &ampMenu,
     },
 };
 
@@ -1513,6 +1552,7 @@ PLACE_SDRAM_BSS Submenu soundFXMenu{
         &stutterMenu,
         &modFXMenu,
         &soundDistortionMenu,
+        &ampMenu,
         &noiseMenu,
     },
 };
@@ -2029,7 +2069,7 @@ PLACE_SDRAM_BSS deluge::vector<HorizontalMenu*> horizontalMenusChainForSound = {
     &recorderMenu, &soundMasterMenu,
 	&sourceMenuGroup, &voiceMenuGroup, &envMenuGroup, &lfoMenuGroup,
 	&filtersMenuGroup, &eqMenu, &modFXMenu,
-	&reverbMenuGroup, &delayMenu, &soundDistortionMenu,
+	&reverbMenuGroup, &delayMenu, &soundDistortionMenu, &ampMenu,
 	&sidechainMenu, &audioCompMenu, &stutterMenu,
 	&arpMenuGroup, &randomizerMenu
 };
@@ -2037,7 +2077,7 @@ PLACE_SDRAM_BSS deluge::vector<HorizontalMenu*> horizontalMenusChainForSound = {
 PLACE_SDRAM_BSS deluge::vector<HorizontalMenu*> horizontalMenusChainForKit = {
 	&kitClipMasterMenu,
 	&globalFiltersMenuGroup, &globalEQMenu, &globalModFXMenu,
-	&globalReverbMenuGroup, &globalDelayMenu, &globalDistortionMenu,
+	&globalReverbMenuGroup, &globalDelayMenu, &globalDistortionMenu, &ampMenu,
 	&globalSidechainMenu, &audioCompMenu, &stutterMenu,
 	&arpMenuGroupKit, &randomizerMenu
 };
@@ -2052,7 +2092,7 @@ PLACE_SDRAM_BSS deluge::vector<HorizontalMenu*> horizontalMenusChainForSong = {
 PLACE_SDRAM_BSS deluge::vector<HorizontalMenu*> horizontalMenusChainForAudioClip = {
 	&audioClipMasterMenu, &audioClipSampleMenu,
 	&globalFiltersMenuGroup, &eqMenu, &globalModFXMenu,
-	&globalReverbMenuGroup, &globalDelayMenu, &audioClipDistortionMenu,
+	&globalReverbMenuGroup, &globalDelayMenu, &audioClipDistortionMenu, &ampMenu,
 	&globalSidechainMenu, &audioCompMenu, &stutterMenu
 };
 

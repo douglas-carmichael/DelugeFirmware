@@ -123,8 +123,15 @@ const uint32_t mutePadActionUIModes[] = {UI_MODE_NOTES_PRESSED, UI_MODE_AUDITION
 
 const uint32_t verticalScrollUIModes[] = {UI_MODE_NOTES_PRESSED, UI_MODE_AUDITIONING, UI_MODE_RECORD_COUNT_IN, 0};
 
-constexpr int32_t kNumNonGlobalParamsForAutomation = 83;
-constexpr int32_t kNumGlobalParamsForAutomation = 39;
+constexpr int32_t kNumNonGlobalParamsForAutomation = 89;
+constexpr int32_t kNumGlobalParamsForAutomation = 45;
+
+/// The AMP's knobs, which the automation view leaves out while the AMP community feature is off
+static bool isHiddenAmpParam(params::Kind kind, ParamType id) {
+	return (kind == params::Kind::UNPATCHED_SOUND || kind == params::Kind::UNPATCHED_GLOBAL)
+	       && id >= params::UNPATCHED_FIRST_AMP_PARAM && id <= params::UNPATCHED_LAST_AMP_PARAM
+	       && !runtimeFeatureSettings.isOn(RuntimeFeatureSettingType::AmpSim);
+}
 
 // synth and kit rows FX - sorted in the order that Parameters are scrolled through on the display
 const std::array<std::pair<params::Kind, ParamType>, kNumNonGlobalParamsForAutomation> nonGlobalParamsForAutomation{{
@@ -157,6 +164,13 @@ const std::array<std::pair<params::Kind, ParamType>, kNumNonGlobalParamsForAutom
     {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_SAMPLE_RATE_REDUCTION},
     {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_BITCRUSHING},
     {params::Kind::PATCHED, params::LOCAL_FOLD},
+    // Amp Gain, Bass, Mid, Treble, Presence, Level
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_AMP_GAIN},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_AMP_BASS},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_AMP_MID},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_AMP_TREBLE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_AMP_PRESENCE},
+    {params::Kind::UNPATCHED_SOUND, params::UNPATCHED_AMP_LEVEL},
     // OSC 1 Volume, Pitch, Pulse Width, Carrier Feedback, Wave Index
     {params::Kind::PATCHED, params::LOCAL_OSC_A_VOLUME},
     {params::Kind::PATCHED, params::LOCAL_OSC_A_PITCH_ADJUST},
@@ -276,6 +290,13 @@ const std::array<std::pair<params::Kind, ParamType>, kNumGlobalParamsForAutomati
     // Decimation, Bitcrush
     {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_SAMPLE_RATE_REDUCTION},
     {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_BITCRUSHING},
+    // Amp Gain, Bass, Mid, Treble, Presence, Level (not for the song)
+    {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_AMP_GAIN},
+    {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_AMP_BASS},
+    {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_AMP_MID},
+    {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_AMP_TREBLE},
+    {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_AMP_PRESENCE},
+    {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_AMP_LEVEL},
     // Mod FX Offset, Feedback, Depth, Rate
     {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_MOD_FX_OFFSET},
     {params::Kind::UNPATCHED_GLOBAL, params::UNPATCHED_MOD_FX_FEEDBACK},
@@ -2699,6 +2720,7 @@ void AutomationView::selectGlobalParam(int32_t offset, Clip* clip) {
 		{
 			while ((id == params::UNPATCHED_PITCH_ADJUST || id == params::UNPATCHED_SIDECHAIN_SHAPE
 			        || id == params::UNPATCHED_SIDECHAIN_VOLUME || id == params::UNPATCHED_COMPRESSOR_THRESHOLD
+			        || (id >= params::UNPATCHED_FIRST_AMP_PARAM && id <= params::UNPATCHED_LAST_AMP_PARAM)
 			        || (id >= params::UNPATCHED_FIRST_ARP_PARAM && id <= params::UNPATCHED_LAST_ARP_PARAM)
 			        || id == params::UNPATCHED_ARP_RATE)) {
 
@@ -2723,7 +2745,7 @@ void AutomationView::selectGlobalParam(int32_t offset, Clip* clip) {
 		auto [kind, id] = globalParamsForAutomation[idx];
 		{
 			while ((id >= params::UNPATCHED_FIRST_ARP_PARAM && id <= params::UNPATCHED_LAST_ARP_PARAM)
-			       || id == params::UNPATCHED_ARP_RATE) {
+			       || id == params::UNPATCHED_ARP_RATE || isHiddenAmpParam(kind, id)) {
 
 				if (offset < 0) {
 					offset -= 1;
@@ -2744,6 +2766,12 @@ void AutomationView::selectGlobalParam(int32_t offset, Clip* clip) {
 		auto idx = getNextSelectedParamArrayPosition(offset, clip->lastSelectedParamArrayPosition,
 		                                             kNumGlobalParamsForAutomation);
 		auto [kind, id] = globalParamsForAutomation[idx];
+		while (isHiddenAmpParam(kind, id)) {
+			offset += (offset < 0) ? -1 : 1;
+			idx = getNextSelectedParamArrayPosition(offset, clip->lastSelectedParamArrayPosition,
+			                                        kNumGlobalParamsForAutomation);
+			id = globalParamsForAutomation[idx].second;
+		}
 		clip->lastSelectedParamID = id;
 		clip->lastSelectedParamKind = kind;
 		clip->lastSelectedParamArrayPosition = idx;
@@ -2780,8 +2808,9 @@ void AutomationView::selectNonGlobalParam(int32_t offset, Clip* clip) {
 		                                             kNumNonGlobalParamsForAutomation);
 		{
 			auto [kind, id] = nonGlobalParamsForAutomation[idx];
-			if ((clip->output->type == OutputType::KIT) && (kind == params::Kind::UNPATCHED_SOUND)
-			    && (id == params::UNPATCHED_PORTAMENTO)) {
+			while (((clip->output->type == OutputType::KIT) && (kind == params::Kind::UNPATCHED_SOUND)
+			        && (id == params::UNPATCHED_PORTAMENTO))
+			       || isHiddenAmpParam(kind, id)) {
 				if (offset < 0) {
 					offset -= 1;
 				}
@@ -2790,6 +2819,8 @@ void AutomationView::selectNonGlobalParam(int32_t offset, Clip* clip) {
 				}
 				idx = getNextSelectedParamArrayPosition(offset, clip->lastSelectedParamArrayPosition,
 				                                        kNumNonGlobalParamsForAutomation);
+				kind = nonGlobalParamsForAutomation[idx].first;
+				id = nonGlobalParamsForAutomation[idx].second;
 			}
 		}
 

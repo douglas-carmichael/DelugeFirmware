@@ -154,7 +154,16 @@ GlobalEffectableForClip::GlobalEffectableForClip() {
 	if (renderedLastTime) {
 		// Render filters
 		processFilters(global_effectable_audio);
+	}
 
+	// The AMP, after the saturation and filters, with the input trim for a whole track. Its tail rings on after the
+	// sound stops (until the AMP sleeps), and counts as sound for the effects after it.
+	if (ampIsActive()) {
+		processAmp(global_effectable_audio, paramManagerForClip, deluge::dsp::amp::AmpEffect::Input::BUS);
+		renderedLastTime = renderedLastTime || amp.isSounding();
+	}
+
+	if (renderedLastTime) {
 		// Render FX
 		processSRRAndBitcrushing(global_effectable_audio, &volumePostFX, paramManagerForClip);
 	}

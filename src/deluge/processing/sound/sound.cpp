@@ -2541,10 +2541,10 @@ void Sound::render(ModelStackWithThreeMainThings* modelStack, std::span<StereoSa
 		// The AMP: once per track, after the voices are added up and before the pan, so the pan still places it
 		if (ampIsActive()) {
 			if (voice_rendered_in_stereo) {
-				amp.process(sound_stereo);
+				processAmp(sound_stereo, paramManager);
 			}
 			else {
-				amp.process(sound_mono);
+				processAmp(sound_mono, paramManager);
 			}
 		}
 
@@ -2593,7 +2593,7 @@ void Sound::render(ModelStackWithThreeMainThings* modelStack, std::span<StereoSa
 		// After the last voice the AMP rings on briefly (reassessRenderSkippingStatus waits for it): run it on the
 		// silence, panned like the voices were
 		if (ampIsActive()) {
-			amp.process(sound_stereo);
+			processAmp(sound_stereo, paramManager);
 			int32_t pan = paramManager->getPatchedParamSet()->getValue(params::LOCAL_PAN) >> 1;
 			int32_t amplitudeL, amplitudeR;
 			if (AudioEngine::renderInStereo && shouldDoPanning(pan, &amplitudeL, &amplitudeR)) {
