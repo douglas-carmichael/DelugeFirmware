@@ -205,6 +205,10 @@ void RuntimeFeatureSettings::init() {
 	SetupOnOffSetting(settings[RuntimeFeatureSettingType::RoundedCorners], STRING_FOR_COMMUNITY_FEATURE_ROUNDED_CORNERS,
 	                  "roundedCorners", RuntimeFeatureStateToggle::On);
 
+	// AMP effect: while it is off, the AMP menus are hidden and every AMP is bypassed
+	SetupOnOffSetting(settings[RuntimeFeatureSettingType::AmpSim], STRING_FOR_COMMUNITY_FEATURE_AMP_SIM, "ampSim",
+	                  RuntimeFeatureStateToggle::Off);
+
 	// Shortcut Overlay
 	auto& overlay = settings[RuntimeFeatureSettingType::ShortcutOverlay];
 	overlay.displayName = STRING_FOR_COMMUNITY_FEATURE_SHORTCUT_OVERLAY;

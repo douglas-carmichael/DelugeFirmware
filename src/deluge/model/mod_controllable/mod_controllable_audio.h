@@ -19,6 +19,7 @@
 
 #include "definitions_cxx.hpp"
 #include "deluge/dsp/granular/GranularProcessor.h"
+#include "dsp/amp/amp_effect.h"
 #include "dsp/compressor/rms_feedback.h"
 #include "dsp/delay/delay.h"
 #include "dsp/stereo_sample.h"
@@ -114,6 +115,11 @@ public:
 	ModFXProcessor modfx{};
 	RMSFeedbackCompressor compressor;
 	GranularProcessor* grainFX{nullptr};
+
+	// The AMP effect (a guitar amp and speaker cab): once per track, after its saturation and filters
+	deluge::dsp::amp::AmpEffect amp;
+	/// The AMP runs while it is on and the community feature is on too
+	[[nodiscard]] bool ampIsActive() const;
 
 	uint32_t lowSampleRatePos{};
 	uint32_t highSampleRatePos{};

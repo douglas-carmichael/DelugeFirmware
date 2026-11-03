@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include "dsp/amp/amp_settings.h"
 #include "dsp/amp/cab_filters.h"
 
 #include <algorithm>
@@ -589,26 +590,6 @@ private:
 	State state_[kMaxCabSections]{};
 	DoubleState doubleState_[kMaxCabSections]{};
 	alignas(16) float cols_[kMaxCabSections][8][4]{};
-};
-
-enum class ToneStackType : uint8_t { AMERICAN, BRITISH };
-
-/// The knobs, 0..1 (0.5 is the middle), and the output level in dB. They can change while the AMP runs (setKnobs).
-struct Knobs {
-	float gain = 0.5f;
-	float bass = 0.5f;
-	float mid = 0.5f;
-	float treble = 0.5f;
-	float presence = 0.5f;
-	float levelDb = 0.0f;
-};
-
-/// Everything; changing anything but the knobs needs configure(), which also clears the state
-struct Settings {
-	Knobs knobs;
-	int cab = 4; ///< 0 = no cab, 1..kNumCabs = kCabDesigns[cab - 1]
-	ToneStackType toneStack = ToneStackType::BRITISH;
-	int oversample = 2; ///< 1 or 2
 };
 
 class AmpSim {

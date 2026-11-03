@@ -2184,7 +2184,7 @@ void Sound::reassessRenderSkippingStatus(ModelStackWithSoundFlags* modelStack, b
 
 		if (skippingStatusNow) {
 
-			// We wanna start, skipping, but if MOD fx or the compressor are on...
+			// We wanna start, skipping, but if MOD fx, the compressor or the AMP are on...
 			int32_t waitSamples = getSamplesUntilFXTailsEnd(modFXType_);
 			if (waitSamples != 0) {
 
@@ -2538,6 +2538,16 @@ void Sound::render(ModelStackWithThreeMainThings* modelStack, std::span<StereoSa
 		}
 		std::erase_if(voices_, [](const ActiveVoice& voice) { return voice->shouldBeDeleted(); });
 
+		// The AMP: once per track, after the voices are added up and before the pan, so the pan still places it
+		if (ampIsActive()) {
+			if (voice_rendered_in_stereo) {
+				amp.process(sound_stereo);
+			}
+			else {
+				amp.process(sound_mono);
+			}
+		}
+
 		// We know that nothing's patched to pan, so can read it in this very basic way.
 		int32_t pan = paramManager->getPatchedParamSet()->getValue(params::LOCAL_PAN) >> 1;
 		int32_t amplitudeL, amplitudeR;
@@ -2578,6 +2588,20 @@ void Sound::render(ModelStackWithThreeMainThings* modelStack, std::span<StereoSa
 			// Clear the non-overlapping portion of the stereo buffer (yes this is janky).
 			// (data() + size(), not &operator[](size()): indexing one-past-end is UB.)
 			memset(sound_mono.data() + sound_mono.size(), 0, sound_stereo.size_bytes() - sound_mono.size_bytes());
+		}
+
+		// After the last voice the AMP rings on briefly (reassessRenderSkippingStatus waits for it): run it on the
+		// silence, panned like the voices were
+		if (ampIsActive()) {
+			amp.process(sound_stereo);
+			int32_t pan = paramManager->getPatchedParamSet()->getValue(params::LOCAL_PAN) >> 1;
+			int32_t amplitudeL, amplitudeR;
+			if (AudioEngine::renderInStereo && shouldDoPanning(pan, &amplitudeL, &amplitudeR)) {
+				for (StereoSample& sample : sound_stereo) {
+					sample.l = multiply_32x32_rshift32(sample.l, amplitudeL) << 2;
+					sample.r = multiply_32x32_rshift32(sample.r, amplitudeR) << 2;
+				}
+			}
 		}
 	}
 
@@ -2647,6 +2671,7 @@ void Sound::startSkippingRendering(ModelStackWithSoundFlags* modelStack) {
 	// reversible without doing anything
 
 	setSkippingRendering(true);
+	amp.reset();   // its tail has died away by now: start clean next time
 	if (grainFX) { // grainFX is null unless GRAIN mod-FX has been used — guard like every other access
 		grainFX->startSkippingRendering();
 	}

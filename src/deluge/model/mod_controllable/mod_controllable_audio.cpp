@@ -1482,6 +1482,11 @@ char const* ModControllableAudio::getHPFModeDisplayName() {
 void ModControllableAudio::wontBeRenderedForAWhile() {
 	delay.discardBuffers();
 	endStutter(nullptr);
+	amp.reset(); // keeps its memory: allocating from the audio routine when the track renders again isn't allowed
+}
+
+bool ModControllableAudio::ampIsActive() const {
+	return amp.isOn() && runtimeFeatureSettings.isOn(RuntimeFeatureSettingType::AmpSim);
 }
 
 void ModControllableAudio::clearModFXMemory() {
@@ -1494,8 +1499,10 @@ void ModControllableAudio::clearModFXMemory() {
 }
 
 int32_t ModControllableAudio::getSamplesUntilFXTailsEnd(ModFXType modFXType) const {
+	// The AMP's tone stack and cab filters ring on after their input stops
+	const int32_t ampSamples = ampIsActive() ? deluge::dsp::amp::AmpEffect::kTailSamples : 0;
 	if (modFXType == ModFXType::NONE && compressor.getThreshold() <= 0) {
-		return 0;
+		return ampSamples;
 	}
 	int32_t modFXSamples = 0;
 	switch (modFXType) {
@@ -1512,7 +1519,7 @@ int32_t ModControllableAudio::getSamplesUntilFXTailsEnd(ModFXType modFXType) con
 	default:
 		modFXSamples = 90 * 441;
 	}
-	return std::max(modFXSamples, static_cast<int32_t>(compressor.getReleaseMS() * 44));
+	return std::max({modFXSamples, static_cast<int32_t>(compressor.getReleaseMS() * 44), ampSamples});
 }
 
 bool ModControllableAudio::setModFXType(ModFXType newType) {
