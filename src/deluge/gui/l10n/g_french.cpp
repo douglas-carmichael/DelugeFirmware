@@ -186,7 +186,6 @@ PLACE_SDRAM_DATA Language french{
         {STRING_FOR_SQUARE, "Carre"},
         {STRING_FOR_SAW, "Scie"},
         {STRING_FOR_RANDOM_WALK, "Marche Aleatoire"},
-        {STRING_FOR_RANDOM_WALK_SHORT, "Marche"},
         {STRING_FOR_JUMP, "Saut"},
         {STRING_FOR_SCALE, "Gamme"},
         {STRING_FOR_RELATIVE, "Relatif"},
