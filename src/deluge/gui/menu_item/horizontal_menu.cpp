@@ -319,7 +319,8 @@ void HorizontalMenu::displayNotification(MenuItem* menuItem) {
 
 	DEF_STACK_STRING_BUF(notificationValueBuf, kShortStringBufferSize);
 	menuItem->getNotificationValue(notificationValueBuf);
-	display->displayNotification(menuItem->getName(), notificationValueBuf.data());
+	// A name too wide to sit beside the value gives way to the item's screen title, which is made to fit the screen
+	display->displayNotification(menuItem->getName(), notificationValueBuf.data(), menuItem->getTitle());
 }
 
 void HorizontalMenu::switchVisiblePage(int32_t direction) {

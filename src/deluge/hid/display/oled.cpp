@@ -816,10 +816,8 @@ void OLED::removeWorkingAnimation() {
 	}
 }
 
-void OLED::displayNotification(std::string_view param_title, std::optional<std::string_view> param_value) {
-	DEF_STACK_STRING_BUF(titleBuf, 25);
-	titleBuf.append(param_title);
-
+void OLED::displayNotification(std::string_view param_title, std::optional<std::string_view> param_value,
+                               std::string_view shorter_title) {
 	constexpr uint8_t start_x = 0;
 	constexpr uint8_t end_x = OLED_MAIN_WIDTH_PIXELS - 1;
 	constexpr uint8_t start_y = OLED_MAIN_TOPMOST_PIXEL;
@@ -828,9 +826,24 @@ void OLED::displayNotification(std::string_view param_title, std::optional<std::
 	constexpr uint8_t height = end_y - start_y;
 	constexpr int32_t padding_left = 4;
 
-	int32_t title_width = popup.getStringWidthInPixels(param_title.data(), kTextSpacingY);
 	const int32_t value_width =
 	    param_value.has_value() ? popup.getStringWidthInPixels(param_value.value().data(), kTextSpacingY) : 0;
+
+	// A title too wide to sit beside the value is cut below; a shorter one that fits (a menu item's screen title,
+	// for a name that a translation made long) reads better than a cut
+	const auto fits_beside_value = [&](std::string_view title) {
+		return popup.getStringWidthInPixels(title.data(), kTextSpacingY) + padding_left + value_width
+		       <= OLED_MAIN_WIDTH_PIXELS - 7;
+	};
+	if (value_width > 0 && !shorter_title.empty() && !fits_beside_value(param_title)
+	    && fits_beside_value(shorter_title)) {
+		param_title = shorter_title;
+	}
+
+	DEF_STACK_STRING_BUF(titleBuf, 25);
+	titleBuf.append(param_title);
+
+	int32_t title_width = popup.getStringWidthInPixels(param_title.data(), kTextSpacingY);
 
 	if (value_width > 0) {
 		// Truncate the title string until we have space to display the value

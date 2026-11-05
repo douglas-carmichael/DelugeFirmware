@@ -190,7 +190,8 @@ public:
 	bool hasPopupOfType(PopupType type) override { return isPopupPresentOfType(type); }
 
 	// Horizontal menus
-	void displayNotification(std::string_view param_title, std::optional<std::string_view> param_value) override;
+	void displayNotification(std::string_view param_title, std::optional<std::string_view> param_value,
+	                         std::string_view shorter_title = {}) override;
 
 private:
 	static uint32_t mainImageGeneration;

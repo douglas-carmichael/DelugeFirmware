@@ -87,7 +87,10 @@ public:
 	virtual void displayLoadingAnimationText(char const* text, bool delayed = false, bool transparent = false) = 0;
 	virtual void removeLoadingAnimation() = 0;
 
-	virtual void displayNotification(std::string_view paramTitle, std::optional<std::string_view> paramValue) {}
+	/// A one-line "title: value" popup. A title too wide to sit beside the value gives way to shorterTitle when that
+	/// one fits, and is cut otherwise.
+	virtual void displayNotification(std::string_view paramTitle, std::optional<std::string_view> paramValue,
+	                                 std::string_view shorterTitle = {}) {}
 
 	virtual bool hasPopup() = 0;
 	virtual bool hasPopupOfType(PopupType type) = 0;
