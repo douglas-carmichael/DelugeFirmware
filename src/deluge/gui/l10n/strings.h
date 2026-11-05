@@ -1155,6 +1155,7 @@ enum class String : size_t {
 
 	// drum synth engine (OscType::LXR) and the acid filter
 	STRING_FOR_LXR_ENGINE,
+	STRING_FOR_LXR_ENGINE_SHORT,
 	STRING_FOR_COMMUNITY_FEATURE_LXR_ENGINE,
 	STRING_FOR_LXR_VOICE_TYPE,
 	STRING_FOR_LXR_DRUM_1,

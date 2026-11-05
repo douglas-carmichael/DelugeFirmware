@@ -183,10 +183,25 @@ public:
 		oled_canvas::Canvas& image = OLED::main;
 
 		const OscType osc_type = soundEditor.currentSound->sources[sourceId_].oscType;
-		if (osc_type == OscType::DX7 || osc_type == OscType::LXR) {
+		if (osc_type == OscType::DX7) {
 			const auto option = getOptions(OptType::FULL)[getValue()].data();
 			return image.drawStringCentered(option, slot.start_x, slot.start_y + kHorizontalMenuSlotYOffset + 5,
 			                                kTextTitleSpacingX, kTextTitleSizeY, slot.width);
+		}
+		if (osc_type == OscType::LXR) {
+			// Cut to fit, the name would read SYN in French and SIN in Spanish, so every language shows one short
+			// label. drawStringCentered() cuts what comes within 3 px of the width, which would take the period
+			// off "DRU." (29 px) in this 31 px slot, so the label is centred here without that cut. A label at most
+			// 2 px narrower than the slot stays inside the selected slot's highlight; a wider one is cut as before.
+			const char* label = l10n::get(l10n::String::STRING_FOR_LXR_ENGINE_SHORT);
+			const int32_t label_width = image.getStringWidthInPixels(label, kTextTitleSizeY);
+			const int32_t y = slot.start_y + kHorizontalMenuSlotYOffset + 5;
+			if (label_width > slot.width - 2) {
+				return image.drawStringCentered(label, slot.start_x, y, kTextTitleSpacingX, kTextTitleSizeY,
+				                                slot.width);
+			}
+			return image.drawString(label, slot.start_x + (slot.width - label_width + 1) / 2, y, kTextTitleSpacingX,
+			                        kTextTitleSizeY);
 		}
 
 		const Icon& icon = [&] {
