@@ -869,6 +869,7 @@ PLACE_SDRAM_DATA Language english{
         {STRING_FOR_MPE_OUTPUT, "MPE output"},
         {STRING_FOR_MPE_INPUT, "MPE input"},
         {STRING_FOR_SUBTRACTIVE, "Subtractive"},
+        {STRING_FOR_SUBTRACTIVE_SHORT, "Subt"},
         {STRING_FOR_FM, "Fm"},
         {STRING_FOR_RINGMOD, "Ringmod"},
         {STRING_FOR_NOTE_RANGE, "Note range"},

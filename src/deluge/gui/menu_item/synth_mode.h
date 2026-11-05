@@ -19,6 +19,7 @@
 #include "gui/menu_item/selection.h"
 #include "gui/ui/sound_editor.h"
 #include "gui/views/view.h"
+#include "hid/display/oled.h"
 #include "model/instrument/kit.h"
 #include "model/song/song.h"
 #include "processing/sound/sound.h"
@@ -64,6 +65,23 @@ public:
 		    l10n::getView(l10n::String::STRING_FOR_FM),
 		    l10n::getView(l10n::String::STRING_FOR_RINGMOD),
 		};
+	}
+
+	// Cut to the slot's 4 letters, French Soustractive would read SOUS ("under"), so subtractive has a short label of
+	// its own, which may take a fifth letter (French SOUST, Spanish SUSTR). drawStringCentered() cuts what comes
+	// within 3 px of the width, so the label is centred here without that cut: 5 letters (30 px) fit the 31 px slot.
+	void renderInHorizontalMenu(const SlotPosition& slot) override {
+		if (getValue<::SynthMode>() != ::SynthMode::SUBTRACTIVE) {
+			return Selection::renderInHorizontalMenu(slot);
+		}
+		hid::display::oled_canvas::Canvas& image = hid::display::OLED::main;
+		const char* label = l10n::get(l10n::String::STRING_FOR_SUBTRACTIVE_SHORT);
+		const int32_t label_width = image.getStringWidthInPixels(label, kTextSpacingY);
+		const int32_t y = slot.start_y + kHorizontalMenuSlotYOffset;
+		if (label_width > slot.width - 1) {
+			return image.drawStringCentered(label, slot.start_x, y, kTextSpacingX, kTextSpacingY, slot.width);
+		}
+		image.drawString(label, slot.start_x + (slot.width - label_width + 1) / 2, y, kTextSpacingX, kTextSpacingY);
 	}
 
 	bool isRelevant(ModControllableAudio* modControllable, int32_t whichThing) const override {

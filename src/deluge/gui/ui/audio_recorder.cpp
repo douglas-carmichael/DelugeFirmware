@@ -129,7 +129,8 @@ gotError:
 void AudioRecorder::renderOLED(deluge::hid::display::oled_canvas::Canvas& canvas) {
 	const char* current_status_text =
 	    updatedRecordingStatus ? l10n::get(l10n::String::STRING_FOR_RECORDING) : "Waiting";
-	canvas.drawStringCentred(current_status_text, 19, kTextBigSpacingX, kTextBigSizeY);
+	// French "Enregistrement" is 167 px in this font: a status too wide for the screen is drawn smaller
+	canvas.drawStringCentredShrinkIfNecessary(current_status_text, 19, kTextBigSpacingX, kTextBigSizeY);
 }
 
 bool AudioRecorder::setupRecordingToFile(AudioInputChannel newMode, int32_t newNumChannels,
