@@ -1222,7 +1222,8 @@ weAreInArrangementEditorOrInClipInstance:
 	writer.writeAttribute("affectEntire", affectEntire);
 	writer.writeAttribute("activeModFunction", globalEffectable.modKnobMode);
 
-	if (lastSelectedParamID != params::kNoParamID) {
+	// Not an AMP knob: they're numbered after the params older firmware has, which would look past its list for them
+	if (lastSelectedParamID != params::kNoParamID && !params::isAmpParam(lastSelectedParamKind, lastSelectedParamID)) {
 		writer.writeAttribute("lastSelectedParamID", lastSelectedParamID);
 		writer.writeAttribute("lastSelectedParamKind", util::to_underlying(lastSelectedParamKind));
 		writer.writeAttribute("lastSelectedParamShortcutX", lastSelectedParamShortcutX);

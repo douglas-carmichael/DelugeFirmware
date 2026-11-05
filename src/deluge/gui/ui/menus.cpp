@@ -651,18 +651,16 @@ PLACE_SDRAM_BSS HorizontalMenu soundDistortionMenu{
 
 // AMP (the amp and cab simulation), for every track type but not the song --------------------
 PLACE_SDRAM_BSS amp::Enabled ampEnabledMenu{STRING_FOR_AMP, STRING_FOR_AMP};
-PLACE_SDRAM_BSS amp::Knob ampGainMenu{STRING_FOR_GAIN, STRING_FOR_AMP_GAIN, STRING_FOR_GAIN,
-                                      params::UNPATCHED_AMP_GAIN};
+PLACE_SDRAM_BSS amp::Knob ampGainMenu{STRING_FOR_GAIN, STRING_FOR_AMP_GAIN, STRING_FOR_GAIN, params::AmpKnob::GAIN};
 PLACE_SDRAM_BSS amp::Knob ampLevelMenu{STRING_FOR_LEVEL, STRING_FOR_AMP_LEVEL, STRING_FOR_LEVEL_SHORT,
-                                       params::UNPATCHED_AMP_LEVEL};
+                                       params::AmpKnob::LEVEL};
 PLACE_SDRAM_BSS amp::Cab ampCabMenu{STRING_FOR_CAB, STRING_FOR_CAB};
-PLACE_SDRAM_BSS amp::Knob ampBassMenu{STRING_FOR_BASS, STRING_FOR_AMP_BASS, STRING_FOR_BASS,
-                                      params::UNPATCHED_AMP_BASS};
-PLACE_SDRAM_BSS amp::Knob ampMidMenu{STRING_FOR_MID, STRING_FOR_AMP_MID, STRING_FOR_MID, params::UNPATCHED_AMP_MID};
+PLACE_SDRAM_BSS amp::Knob ampBassMenu{STRING_FOR_BASS, STRING_FOR_AMP_BASS, STRING_FOR_BASS, params::AmpKnob::BASS};
+PLACE_SDRAM_BSS amp::Knob ampMidMenu{STRING_FOR_MID, STRING_FOR_AMP_MID, STRING_FOR_MID, params::AmpKnob::MID};
 PLACE_SDRAM_BSS amp::Knob ampTrebleMenu{STRING_FOR_TREBLE, STRING_FOR_AMP_TREBLE, STRING_FOR_TREBLE,
-                                        params::UNPATCHED_AMP_TREBLE};
+                                        params::AmpKnob::TREBLE};
 PLACE_SDRAM_BSS amp::Knob ampPresenceMenu{STRING_FOR_PRESENCE, STRING_FOR_AMP_PRESENCE, STRING_FOR_PRESENCE_SHORT,
-                                          params::UNPATCHED_AMP_PRESENCE};
+                                          params::AmpKnob::PRESENCE};
 PLACE_SDRAM_BSS amp::ToneStack ampToneStackMenu{STRING_FOR_TONE_STACK, STRING_FOR_TONE_STACK_SHORT};
 PLACE_SDRAM_BSS amp::Quality ampQualityMenu{STRING_FOR_QUALITY, STRING_FOR_QUALITY_SHORT};
 PLACE_SDRAM_BSS amp::Channels ampChannelsMenu{STRING_FOR_CHANNELS, STRING_FOR_CHANNELS_SHORT};

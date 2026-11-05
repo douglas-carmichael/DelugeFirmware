@@ -125,6 +125,17 @@ public:
 	void processAmp(std::span<StereoSample> buffer, ParamManager* paramManager,
 	                deluge::dsp::amp::AmpEffect::Input input = deluge::dsp::amp::AmpEffect::Input::SOUND);
 	void processAmp(std::span<q31_t> buffer, ParamManager* paramManager);
+	/// The AMP's knobs as params (see params::ampParam()): Sounds pass kind UNPATCHED_SOUND, GlobalEffectables
+	/// UNPATCHED_GLOBAL. Put in the middle; written to files only once moved or automated; read back.
+	static void initAmpParams(ParamManager* paramManager, deluge::modulation::params::Kind kind);
+	static void writeAmpParamAttributesToFile(Serializer& writer, ParamManager* paramManager,
+	                                          deluge::modulation::params::Kind kind, bool writeAutomation,
+	                                          int32_t* valuesForOverride = nullptr);
+	static bool readAmpParamTagFromFile(Deserializer& reader, char const* tagName,
+	                                    ParamManagerForTimeline* paramManager, deluge::modulation::params::Kind kind,
+	                                    int32_t readAutomationUpToPos);
+	/// UNPATCHED_SOUND for a Sound, UNPATCHED_GLOBAL for a GlobalEffectable
+	[[nodiscard]] deluge::modulation::params::Kind getUnpatchedParamKind() const { return unpatchedParamKind_; }
 
 	uint32_t lowSampleRatePos{};
 	uint32_t highSampleRatePos{};

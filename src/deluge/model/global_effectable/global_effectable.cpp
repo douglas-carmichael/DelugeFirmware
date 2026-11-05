@@ -64,6 +64,7 @@ void GlobalEffectable::initParams(ParamManager* paramManager) {
 
 	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
 	unpatchedParams->kind = deluge::modulation::params::Kind::UNPATCHED_GLOBAL;
+	ModControllableAudio::initAmpParams(paramManager, params::Kind::UNPATCHED_GLOBAL);
 
 	// Overwrite default arp Gate to 50 for Kit affect-entire arp
 	unpatchedParams->params[params::UNPATCHED_ARP_GATE].setCurrentValueBasicForSetup(2147483647);
@@ -856,6 +857,9 @@ void GlobalEffectable::writeParamAttributesToFile(Serializer& writer, ParamManag
 
 	unpatchedParams->writeParamAsAttribute(writer, "arpeggiatorRate", params::UNPATCHED_ARP_RATE, writeAutomation,
 	                                       false, valuesForOverride);
+
+	ModControllableAudio::writeAmpParamAttributesToFile(writer, paramManager, params::Kind::UNPATCHED_GLOBAL,
+	                                                    writeAutomation, valuesForOverride);
 }
 
 void GlobalEffectable::writeParamTagsToFile(Serializer& writer, ParamManager* paramManager, bool writeAutomation,
@@ -1033,6 +1037,8 @@ bool GlobalEffectable::readParamTagFromFile(Deserializer& reader, char const* ta
 		reader.exitTag("arpeggiatorRate");
 	}
 
+	else if (ModControllableAudio::readAmpParamTagFromFile(reader, tagName, paramManager,
+	                                                       params::Kind::UNPATCHED_GLOBAL, readAutomationUpToPos)) {}
 	else if (ModControllableAudio::readParamTagFromFile(reader, tagName, paramManager, readAutomationUpToPos)) {}
 
 	else {

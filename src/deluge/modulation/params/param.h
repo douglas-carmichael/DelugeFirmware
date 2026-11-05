@@ -186,15 +186,6 @@ enum UnpatchedShared : ParamType {
 	UNPATCHED_MOD_FX_FEEDBACK,
 	UNPATCHED_SIDECHAIN_SHAPE,
 	UNPATCHED_COMPRESSOR_THRESHOLD,
-	// AMP (the amp and cab simulation)
-	UNPATCHED_FIRST_AMP_PARAM,
-	UNPATCHED_AMP_GAIN = UNPATCHED_FIRST_AMP_PARAM,
-	UNPATCHED_AMP_BASS,
-	UNPATCHED_AMP_MID,
-	UNPATCHED_AMP_TREBLE,
-	UNPATCHED_AMP_PRESENCE,
-	UNPATCHED_AMP_LEVEL,
-	UNPATCHED_LAST_AMP_PARAM = UNPATCHED_AMP_LEVEL,
 	// Arp
 	UNPATCHED_FIRST_ARP_PARAM,
 	UNPATCHED_ARP_GATE = UNPATCHED_FIRST_ARP_PARAM,
@@ -220,6 +211,14 @@ enum UnpatchedShared : ParamType {
 /// Unpatched params which are only used for Sounds
 enum UnpatchedSound : ParamType {
 	UNPATCHED_PORTAMENTO = UNPATCHED_NUM_SHARED,
+	// The AMP's knobs (the amp and cab simulation), in AmpKnob order. Here and in UnpatchedGlobal they come after
+	// every older param: songs save the automation view's last selected param by its number, so that mustn't change.
+	UNPATCHED_SOUND_AMP_GAIN,
+	UNPATCHED_SOUND_AMP_BASS,
+	UNPATCHED_SOUND_AMP_MID,
+	UNPATCHED_SOUND_AMP_TREBLE,
+	UNPATCHED_SOUND_AMP_PRESENCE,
+	UNPATCHED_SOUND_AMP_LEVEL,
 	UNPATCHED_SOUND_MAX_NUM,
 };
 
@@ -242,8 +241,42 @@ enum UnpatchedGlobal : ParamType {
 	UNPATCHED_SIDECHAIN_VOLUME,
 	UNPATCHED_PITCH_ADJUST,
 	UNPATCHED_TEMPO,
+	// The AMP's knobs, as in UnpatchedSound
+	UNPATCHED_GLOBAL_AMP_GAIN,
+	UNPATCHED_GLOBAL_AMP_BASS,
+	UNPATCHED_GLOBAL_AMP_MID,
+	UNPATCHED_GLOBAL_AMP_TREBLE,
+	UNPATCHED_GLOBAL_AMP_PRESENCE,
+	UNPATCHED_GLOBAL_AMP_LEVEL,
 	UNPATCHED_GLOBAL_MAX_NUM,
 };
+
+/// The AMP's six knobs, in the order of their params
+enum class AmpKnob : uint8_t { GAIN, BASS, MID, TREBLE, PRESENCE, LEVEL };
+constexpr int32_t kNumAmpKnobs = 6;
+static_assert(UNPATCHED_SOUND_AMP_LEVEL - UNPATCHED_SOUND_AMP_GAIN + 1 == kNumAmpKnobs);
+static_assert(UNPATCHED_GLOBAL_AMP_LEVEL - UNPATCHED_GLOBAL_AMP_GAIN + 1 == kNumAmpKnobs);
+
+/// An AMP knob's param, for a Sound (kind UNPATCHED_SOUND: synths and drums) or a GlobalEffectable (UNPATCHED_GLOBAL:
+/// kits and audio tracks)
+constexpr ParamType ampParam(Kind kind, AmpKnob knob) {
+	const int32_t offset = static_cast<int32_t>(knob);
+	if (kind == Kind::UNPATCHED_GLOBAL) {
+		return static_cast<ParamType>(UNPATCHED_GLOBAL_AMP_GAIN + offset);
+	}
+	return static_cast<ParamType>(UNPATCHED_SOUND_AMP_GAIN + offset);
+}
+
+/// Whether an unpatched param of this kind is one of the AMP's knobs
+constexpr bool isAmpParam(Kind kind, int32_t p) {
+	if (kind == Kind::UNPATCHED_SOUND) {
+		return p >= UNPATCHED_SOUND_AMP_GAIN && p <= UNPATCHED_SOUND_AMP_LEVEL;
+	}
+	if (kind == Kind::UNPATCHED_GLOBAL) {
+		return p >= UNPATCHED_GLOBAL_AMP_GAIN && p <= UNPATCHED_GLOBAL_AMP_LEVEL;
+	}
+	return false;
+}
 
 constexpr ParamType STATIC_START = 162;
 

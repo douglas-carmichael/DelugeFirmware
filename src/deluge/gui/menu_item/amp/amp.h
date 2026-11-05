@@ -90,17 +90,23 @@ public:
 };
 
 /// GAIN, BASS, MID, TREBLE, PRESENCE and LEVEL: params, so each clip has its own values, with automation and MIDI
-/// learn, like the other effects' knobs
+/// learn, like the other effects' knobs. Sounds (synths, drums) and GlobalEffectables (kits, audio tracks) number
+/// them differently, so the param comes from what's being edited.
 class Knob final : public UnpatchedParam {
 public:
-	Knob(l10n::String name, l10n::String title, l10n::String columnLabel, int32_t param)
-	    : UnpatchedParam(name, title, param), columnLabel_{columnLabel} {}
+	Knob(l10n::String name, l10n::String title, l10n::String columnLabel, modulation::params::AmpKnob knob)
+	    : UnpatchedParam(name, title, modulation::params::ampParam(modulation::params::Kind::UNPATCHED_SOUND, knob)),
+	      knob_{knob}, columnLabel_{columnLabel} {}
+	[[nodiscard]] uint8_t getP() const override {
+		return modulation::params::ampParam(soundEditor.currentModControllable->getUnpatchedParamKind(), knob_);
+	}
 	void getColumnLabel(StringBuf& label) override { label.append(l10n::getView(columnLabel_)); }
 	bool isRelevant(ModControllableAudio* modControllable, int32_t whichThing) const override {
 		return isRelevantFor(modControllable);
 	}
 
 private:
+	modulation::params::AmpKnob knob_;
 	l10n::String columnLabel_;
 };
 

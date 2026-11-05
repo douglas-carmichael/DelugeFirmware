@@ -134,6 +134,7 @@ void Sound::initParams(ParamManager* paramManager) {
 
 	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
 	unpatchedParams->kind = params::Kind::UNPATCHED_SOUND;
+	ModControllableAudio::initAmpParams(paramManager, params::Kind::UNPATCHED_SOUND);
 
 	unpatchedParams->params[params::UNPATCHED_PORTAMENTO].setCurrentValueBasicForSetup(-2147483648);
 
@@ -4064,6 +4065,8 @@ bool Sound::readParamTagFromFile(Deserializer& reader, char const* tagName, Para
 		paramManager->getPatchCableSet()->readPatchCablesFromFile(reader, readAutomationUpToPos);
 		reader.exitTag("patchCables");
 	}
+	else if (ModControllableAudio::readAmpParamTagFromFile(reader, tagName, paramManager, params::Kind::UNPATCHED_SOUND,
+	                                                       readAutomationUpToPos)) {}
 	else if (ModControllableAudio::readParamTagFromFile(reader, tagName, paramManager, readAutomationUpToPos)) {}
 
 	else {
@@ -4144,6 +4147,9 @@ void Sound::writeParamsToFile(Serializer& writer, ParamManager* paramManager, bo
 	patchedParams->writeParamAsAttribute(writer, "hpfMorph", params::LOCAL_HPF_MORPH, writeAutomation);
 
 	patchedParams->writeParamAsAttribute(writer, "waveFold", params::LOCAL_FOLD, writeAutomation);
+
+	ModControllableAudio::writeAmpParamAttributesToFile(writer, paramManager, params::Kind::UNPATCHED_SOUND,
+	                                                    writeAutomation);
 
 	writer.writeOpeningTagEnd();
 

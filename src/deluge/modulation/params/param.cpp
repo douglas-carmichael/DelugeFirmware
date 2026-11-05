@@ -287,12 +287,6 @@ char const* getParamDisplayName(Kind kind, int32_t p) {
 		    [UNPATCHED_MOD_FX_FEEDBACK] = STRING_FOR_MODFX_FEEDBACK,
 		    [UNPATCHED_SIDECHAIN_SHAPE] = STRING_FOR_SIDECHAIN_SHAPE,
 		    [UNPATCHED_COMPRESSOR_THRESHOLD] = STRING_FOR_THRESHOLD,
-		    [UNPATCHED_AMP_GAIN] = STRING_FOR_AMP_GAIN,
-		    [UNPATCHED_AMP_BASS] = STRING_FOR_AMP_BASS,
-		    [UNPATCHED_AMP_MID] = STRING_FOR_AMP_MID,
-		    [UNPATCHED_AMP_TREBLE] = STRING_FOR_AMP_TREBLE,
-		    [UNPATCHED_AMP_PRESENCE] = STRING_FOR_AMP_PRESENCE,
-		    [UNPATCHED_AMP_LEVEL] = STRING_FOR_AMP_LEVEL,
 		    [UNPATCHED_ARP_GATE] = STRING_FOR_ARP_GATE_MENU_TITLE,
 		    [UNPATCHED_ARP_RHYTHM] = STRING_FOR_ARP_RHYTHM_MENU_TITLE,
 		    [UNPATCHED_ARP_SEQUENCE_LENGTH] = STRING_FOR_ARP_SEQUENCE_LENGTH_MENU_TITLE,
@@ -327,6 +321,12 @@ char const* getParamDisplayName(Kind kind, int32_t p) {
 		using enum UnpatchedSound;
 		static l10n::String const NAMES[UNPATCHED_SOUND_MAX_NUM - unc] = {
 		    [UNPATCHED_PORTAMENTO - unc] = STRING_FOR_PORTAMENTO,
+		    [UNPATCHED_SOUND_AMP_GAIN - unc] = STRING_FOR_AMP_GAIN,
+		    [UNPATCHED_SOUND_AMP_BASS - unc] = STRING_FOR_AMP_BASS,
+		    [UNPATCHED_SOUND_AMP_MID - unc] = STRING_FOR_AMP_MID,
+		    [UNPATCHED_SOUND_AMP_TREBLE - unc] = STRING_FOR_AMP_TREBLE,
+		    [UNPATCHED_SOUND_AMP_PRESENCE - unc] = STRING_FOR_AMP_PRESENCE,
+		    [UNPATCHED_SOUND_AMP_LEVEL - unc] = STRING_FOR_AMP_LEVEL,
 		};
 		return l10n::get(NAMES[p - unc]);
 	}
@@ -352,6 +352,12 @@ char const* getParamDisplayName(Kind kind, int32_t p) {
 		    [UNPATCHED_SIDECHAIN_VOLUME - unc] = STRING_FOR_SIDECHAIN_LEVEL,
 		    [UNPATCHED_PITCH_ADJUST - unc] = STRING_FOR_MASTER_PITCH,
 		    [UNPATCHED_TEMPO - unc] = STRING_FOR_TEMPO,
+		    [UNPATCHED_GLOBAL_AMP_GAIN - unc] = STRING_FOR_AMP_GAIN,
+		    [UNPATCHED_GLOBAL_AMP_BASS - unc] = STRING_FOR_AMP_BASS,
+		    [UNPATCHED_GLOBAL_AMP_MID - unc] = STRING_FOR_AMP_MID,
+		    [UNPATCHED_GLOBAL_AMP_TREBLE - unc] = STRING_FOR_AMP_TREBLE,
+		    [UNPATCHED_GLOBAL_AMP_PRESENCE - unc] = STRING_FOR_AMP_PRESENCE,
+		    [UNPATCHED_GLOBAL_AMP_LEVEL - unc] = STRING_FOR_AMP_LEVEL,
 		};
 		return l10n::get(NAMES[p - unc]);
 	}
@@ -429,6 +435,24 @@ constexpr char const* paramNameForFileConst(Kind const kind, ParamType const par
 		case UNPATCHED_PORTAMENTO:
 			return "portamento";
 
+		case UNPATCHED_SOUND_AMP_GAIN:
+			return "ampGain";
+
+		case UNPATCHED_SOUND_AMP_BASS:
+			return "ampBass";
+
+		case UNPATCHED_SOUND_AMP_MID:
+			return "ampMid";
+
+		case UNPATCHED_SOUND_AMP_TREBLE:
+			return "ampTreble";
+
+		case UNPATCHED_SOUND_AMP_PRESENCE:
+			return "ampPresence";
+
+		case UNPATCHED_SOUND_AMP_LEVEL:
+			return "ampLevel";
+
 		default:
 		    // Fall through to the other param kind handling
 		    ;
@@ -487,6 +511,24 @@ constexpr char const* paramNameForFileConst(Kind const kind, ParamType const par
 			}
 			return "pitchAdjust";
 
+		case UNPATCHED_GLOBAL_AMP_GAIN:
+			return "ampGain";
+
+		case UNPATCHED_GLOBAL_AMP_BASS:
+			return "ampBass";
+
+		case UNPATCHED_GLOBAL_AMP_MID:
+			return "ampMid";
+
+		case UNPATCHED_GLOBAL_AMP_TREBLE:
+			return "ampTreble";
+
+		case UNPATCHED_GLOBAL_AMP_PRESENCE:
+			return "ampPresence";
+
+		case UNPATCHED_GLOBAL_AMP_LEVEL:
+			return "ampLevel";
+
 		// explicit fallthrough cases
 		case UNPATCHED_TEMPO: // nothing, really?
 		case UNPATCHED_GLOBAL_MAX_NUM:;
@@ -527,24 +569,6 @@ constexpr char const* paramNameForFileConst(Kind const kind, ParamType const par
 
 		case UNPATCHED_COMPRESSOR_THRESHOLD:
 			return "compressorThreshold";
-
-		case UNPATCHED_AMP_GAIN:
-			return "ampGain";
-
-		case UNPATCHED_AMP_BASS:
-			return "ampBass";
-
-		case UNPATCHED_AMP_MID:
-			return "ampMid";
-
-		case UNPATCHED_AMP_TREBLE:
-			return "ampTreble";
-
-		case UNPATCHED_AMP_PRESENCE:
-			return "ampPresence";
-
-		case UNPATCHED_AMP_LEVEL:
-			return "ampLevel";
 
 		case UNPATCHED_ARP_GATE:
 			return "arpGate";

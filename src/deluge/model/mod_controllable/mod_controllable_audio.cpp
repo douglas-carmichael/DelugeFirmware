@@ -51,13 +51,13 @@ extern int32_t spareRenderingBuffer[][SSI_TX_BUFFER_NUM_SAMPLES];
 
 namespace {
 /// The AMP's knobs, by their names in song and preset files (the same as params::paramNameForFile())
-constexpr std::array<std::pair<char const*, params::ParamType>, 6> kAmpParams{{
-    {"ampGain", params::UNPATCHED_AMP_GAIN},
-    {"ampBass", params::UNPATCHED_AMP_BASS},
-    {"ampMid", params::UNPATCHED_AMP_MID},
-    {"ampTreble", params::UNPATCHED_AMP_TREBLE},
-    {"ampPresence", params::UNPATCHED_AMP_PRESENCE},
-    {"ampLevel", params::UNPATCHED_AMP_LEVEL},
+constexpr std::array<std::pair<char const*, params::AmpKnob>, params::kNumAmpKnobs> kAmpParams{{
+    {"ampGain", params::AmpKnob::GAIN},
+    {"ampBass", params::AmpKnob::BASS},
+    {"ampMid", params::AmpKnob::MID},
+    {"ampTreble", params::AmpKnob::TREBLE},
+    {"ampPresence", params::AmpKnob::PRESENCE},
+    {"ampLevel", params::AmpKnob::LEVEL},
 }};
 
 /// The AMP's cab settings by their names in files: 0 is no cab, then deluge::dsp::amp::kCabDesigns' order
@@ -155,11 +155,6 @@ void ModControllableAudio::initParams(ParamManager* paramManager) {
 
 	unpatchedParams->params[params::UNPATCHED_SIDECHAIN_SHAPE].setCurrentValueBasicForSetup(-601295438);
 	unpatchedParams->params[params::UNPATCHED_COMPRESSOR_THRESHOLD].setCurrentValueBasicForSetup(0);
-
-	// The AMP's knobs all start in the middle
-	for (const auto& [name, id] : kAmpParams) {
-		unpatchedParams->params[id].setCurrentValueBasicForSetup(0);
-	}
 }
 
 bool ModControllableAudio::hasBassAdjusted(ParamManager* paramManager) {
@@ -567,6 +562,41 @@ void ModControllableAudio::readAmpFromFile(Deserializer& reader) {
 	amp.setEnabled(on); // if there's no memory for it, it stays off
 }
 
+void ModControllableAudio::initAmpParams(ParamManager* paramManager, params::Kind kind) {
+	// The AMP's knobs all start in the middle
+	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
+	for (const auto& [name, knob] : kAmpParams) {
+		unpatchedParams->params[params::ampParam(kind, knob)].setCurrentValueBasicForSetup(0);
+	}
+}
+
+void ModControllableAudio::writeAmpParamAttributesToFile(Serializer& writer, ParamManager* paramManager,
+                                                         params::Kind kind, bool writeAutomation,
+                                                         int32_t* valuesForOverride) {
+	// Only once they've moved from the middle or have automation: files don't change until the AMP is used, and older
+	// firmware skips these
+	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
+	for (const auto& [name, knob] : kAmpParams) {
+		unpatchedParams->writeParamAsAttribute(writer, name, params::ampParam(kind, knob), writeAutomation, true,
+		                                       valuesForOverride);
+	}
+}
+
+bool ModControllableAudio::readAmpParamTagFromFile(Deserializer& reader, char const* tagName,
+                                                   ParamManagerForTimeline* paramManager, params::Kind kind,
+                                                   int32_t readAutomationUpToPos) {
+	const auto amp = std::ranges::find_if(kAmpParams, [&](const auto& p) { return !strcmp(tagName, p.first); });
+	if (amp == kAmpParams.end()) {
+		return false;
+	}
+	ParamCollectionSummary* unpatchedParamsSummary = paramManager->getUnpatchedParamSetSummary();
+	auto* unpatchedParams = static_cast<UnpatchedParamSet*>(unpatchedParamsSummary->paramCollection);
+	unpatchedParams->readParam(reader, unpatchedParamsSummary, params::ampParam(kind, amp->second),
+	                           readAutomationUpToPos);
+	reader.exitTag(amp->first);
+	return true;
+}
+
 void ModControllableAudio::writeParamAttributesToFile(Serializer& writer, ParamManager* paramManager,
                                                       bool writeAutomation, int32_t* valuesForOverride) {
 	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
@@ -612,12 +642,6 @@ void ModControllableAudio::writeParamAttributesToFile(Serializer& writer, ParamM
 	unpatchedParams->writeParamAsAttribute(writer, "spreadGate", params::UNPATCHED_ARP_SPREAD_GATE, writeAutomation);
 	unpatchedParams->writeParamAsAttribute(writer, "spreadOctave", params::UNPATCHED_ARP_SPREAD_OCTAVE,
 	                                       writeAutomation);
-
-	// The AMP's knobs, only once they've moved from the middle or have automation: files don't change until the AMP
-	// is used, and older firmware skips these
-	for (const auto& [name, id] : kAmpParams) {
-		unpatchedParams->writeParamAsAttribute(writer, name, id, writeAutomation, true, valuesForOverride);
-	}
 }
 
 void ModControllableAudio::writeParamTagsToFile(Serializer& writer, ParamManager* paramManager, bool writeAutomation,
@@ -701,13 +725,6 @@ bool ModControllableAudio::readParamTagFromFile(Deserializer& reader, char const
 		unpatchedParams->readParam(reader, unpatchedParamsSummary, params::UNPATCHED_COMPRESSOR_THRESHOLD,
 		                           readAutomationUpToPos);
 		reader.exitTag("compressorThreshold");
-	}
-
-	else if (const auto amp =
-	             std::ranges::find_if(kAmpParams, [&](const auto& p) { return !strcmp(tagName, p.first); });
-	         amp != kAmpParams.end()) {
-		unpatchedParams->readParam(reader, unpatchedParamsSummary, amp->second, readAutomationUpToPos);
-		reader.exitTag(amp->first);
 	}
 
 	// Arpeggiator stuff
@@ -1591,16 +1608,17 @@ bool ModControllableAudio::ampIsActive() const {
 void ModControllableAudio::setAmpKnobs(ParamManager* paramManager) {
 	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
 	// A param's whole range, -2^31 .. 2^31 - 1 (0 is the middle), as 0..1
-	const auto knob = [&](params::ParamType id) {
-		return (static_cast<float>(unpatchedParams->getValue(id)) + 2147483648.0f) * (1.0f / 4294967296.0f);
+	const auto knob = [&](params::AmpKnob which) {
+		const int32_t value = unpatchedParams->getValue(params::ampParam(unpatchedParamKind_, which));
+		return (static_cast<float>(value) + 2147483648.0f) * (1.0f / 4294967296.0f);
 	};
 	deluge::dsp::amp::Knobs k;
-	k.gain = knob(params::UNPATCHED_AMP_GAIN);
-	k.bass = knob(params::UNPATCHED_AMP_BASS);
-	k.mid = knob(params::UNPATCHED_AMP_MID);
-	k.treble = knob(params::UNPATCHED_AMP_TREBLE);
-	k.presence = knob(params::UNPATCHED_AMP_PRESENCE);
-	k.levelDb = (knob(params::UNPATCHED_AMP_LEVEL) - 0.5f) * deluge::dsp::amp::kLevelRangeDb;
+	k.gain = knob(params::AmpKnob::GAIN);
+	k.bass = knob(params::AmpKnob::BASS);
+	k.mid = knob(params::AmpKnob::MID);
+	k.treble = knob(params::AmpKnob::TREBLE);
+	k.presence = knob(params::AmpKnob::PRESENCE);
+	k.levelDb = (knob(params::AmpKnob::LEVEL) - 0.5f) * deluge::dsp::amp::kLevelRangeDb;
 	amp.setKnobs(k);
 }
 
